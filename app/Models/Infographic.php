@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUnderscoreSlug;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 class Infographic extends Model
 {
+    use HasUnderscoreSlug;
+
     protected $fillable = [
         'title', 'meta_title', 'slug', 'description', 'meta_description', 'meta_keywords',
         'image', 'source_name', 'source_url', 'published_at', 'featured', 'active',
@@ -20,13 +22,6 @@ class Infographic extends Model
             'featured' => 'boolean',
             'active' => 'boolean',
         ];
-    }
-
-    protected static function booted(): void
-    {
-        static::saving(function (Infographic $infographic): void {
-            $infographic->slug = $infographic->slug ?: Str::slug($infographic->title);
-        });
     }
 
     public function getRouteKeyName(): string

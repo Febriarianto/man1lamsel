@@ -80,11 +80,11 @@ class DatabaseSeeder extends Seeder
             };
             $upsertMenu('Beranda', '/', 1, null, '_self', 'bi-house');
             $profileMenu = $upsertMenu('Profil', null, 2, null, '_self', 'bi-building');
-            $upsertMenu('Selayang Pandang', '/profil/selayang-pandang', 1, $profileMenu);
-            $upsertMenu('Visi & Misi', '/profil/visi-dan-misi', 2, $profileMenu);
+            $upsertMenu('Selayang Pandang', '/profil/selayang_pandang', 1, $profileMenu);
+            $upsertMenu('Visi & Misi', '/profil/visi_dan_misi', 2, $profileMenu);
             $upsertMenu('Sejarah', '/profil/sejarah', 3, $profileMenu);
             $upsertMenu('Fasilitas', '/profil/fasilitas', 4, $profileMenu);
-            $upsertMenu('Program Unggulan', '/profil/program-unggulan', 5, $profileMenu);
+            $upsertMenu('Program Unggulan', '/profil/program_unggulan', 5, $profileMenu);
             $upsertMenu('Prestasi Madrasah', '/prestasi', 6, $profileMenu);
             $staffMenu = $upsertMenu('Guru & Staf', null, 3, null, '_self', 'bi-people');
             $upsertMenu('Dewan Guru', '/guru', 1, $staffMenu);
@@ -102,15 +102,15 @@ class DatabaseSeeder extends Seeder
         }
 
         $pages = [
-            ['title'=>'Selayang Pandang','slug'=>'selayang-pandang','excerpt'=>'Mengenal MAN 1 Lampung Selatan lebih dekat.','content'=>'<p>MAN 1 Lampung Selatan merupakan madrasah aliyah negeri yang berkomitmen membangun generasi berakhlak, berilmu, terampil, dan siap menghadapi perubahan zaman.</p><p>Pembelajaran memadukan penguatan karakter keislaman, kecakapan akademik, literasi digital, kepemimpinan, serta kepedulian terhadap lingkungan.</p>','image'=>'demo/campus.svg'],
-            ['title'=>'Visi dan Misi','slug'=>'visi-dan-misi','excerpt'=>'Arah pengembangan dan komitmen pendidikan madrasah.','content'=>'<h3>Visi</h3><p>Terwujudnya madrasah yang unggul, religius, berprestasi, berwawasan lingkungan, dan adaptif terhadap perkembangan teknologi.</p><h3>Misi</h3><ol><li>Menyelenggarakan pembelajaran aktif, inovatif, dan berorientasi pada capaian peserta didik.</li><li>Menguatkan budaya religius, disiplin, bersih, dan ramah lingkungan.</li><li>Mengembangkan potensi akademik dan nonakademik melalui pembinaan berkelanjutan.</li><li>Meningkatkan layanan digital dan tata kelola yang transparan.</li><li>Membangun kemitraan dengan orang tua, masyarakat, pemerintah, dan perguruan tinggi.</li></ol>','image'=>'demo/vision.svg'],
+            ['title'=>'Selayang Pandang','slug'=>'selayang_pandang','excerpt'=>'Mengenal MAN 1 Lampung Selatan lebih dekat.','content'=>'<p>MAN 1 Lampung Selatan merupakan madrasah aliyah negeri yang berkomitmen membangun generasi berakhlak, berilmu, terampil, dan siap menghadapi perubahan zaman.</p><p>Pembelajaran memadukan penguatan karakter keislaman, kecakapan akademik, literasi digital, kepemimpinan, serta kepedulian terhadap lingkungan.</p>','image'=>'demo/campus.svg'],
+            ['title'=>'Visi dan Misi','slug'=>'visi_dan_misi','excerpt'=>'Arah pengembangan dan komitmen pendidikan madrasah.','content'=>'<h3>Visi</h3><p>Terwujudnya madrasah yang unggul, religius, berprestasi, berwawasan lingkungan, dan adaptif terhadap perkembangan teknologi.</p><h3>Misi</h3><ol><li>Menyelenggarakan pembelajaran aktif, inovatif, dan berorientasi pada capaian peserta didik.</li><li>Menguatkan budaya religius, disiplin, bersih, dan ramah lingkungan.</li><li>Mengembangkan potensi akademik dan nonakademik melalui pembinaan berkelanjutan.</li><li>Meningkatkan layanan digital dan tata kelola yang transparan.</li><li>Membangun kemitraan dengan orang tua, masyarakat, pemerintah, dan perguruan tinggi.</li></ol>','image'=>'demo/vision.svg'],
             ['title'=>'Sejarah','slug'=>'sejarah','excerpt'=>'Perjalanan MAN 1 Lampung Selatan sejak awal berdiri.','content'=>'<p>MAN 1 Lampung Selatan tumbuh dari semangat masyarakat untuk menghadirkan pendidikan menengah berciri khas Islam di wilayah Lampung Selatan. Madrasah terus berkembang melalui penguatan kelembagaan, peningkatan mutu tenaga pendidik, fasilitas pembelajaran, serta prestasi peserta didik.</p><p>Konten sejarah lengkap, daftar kepala madrasah, dan tonggak perkembangan dapat diperbarui melalui dashboard admin.</p>','image'=>'demo/history.svg'],
             ['title'=>'Fasilitas','slug'=>'fasilitas','excerpt'=>'Fasilitas untuk mendukung pembelajaran dan pengembangan siswa.','content'=>'<p>Fasilitas madrasah mencakup ruang kelas, perpustakaan, laboratorium komputer, laboratorium sains, aula, sarana ibadah, ruang organisasi siswa, area olahraga, dan lingkungan belajar hijau.</p><p>Daftar, foto, serta kondisi fasilitas dapat ditambahkan dan diperbarui sesuai kebutuhan.</p>','image'=>'demo/lab.svg'],
-            ['title'=>'Program Unggulan','slug'=>'program-unggulan','excerpt'=>'Program pengembangan akademik, karakter, dan keterampilan.','content'=>'<p>Program unggulan diarahkan pada penguatan tahfidz, kelas unggul, pembinaan olimpiade, riset siswa, literasi digital, bahasa, kewirausahaan, dan pengembangan ekstrakurikuler.</p>','image'=>'demo/program.svg'],
+            ['title'=>'Program Unggulan','slug'=>'program_unggulan','excerpt'=>'Program pengembangan akademik, karakter, dan keterampilan.','content'=>'<p>Program unggulan diarahkan pada penguatan tahfidz, kelas unggul, pembinaan olimpiade, riset siswa, literasi digital, bahasa, kewirausahaan, dan pengembangan ekstrakurikuler.</p>','image'=>'demo/program.svg'],
         ];
         foreach($pages as $page) Page::updateOrCreate(['slug'=>$page['slug']], array_merge($page,['status'=>'published','published_at'=>now()]));
 
-        Staff::updateOrCreate(['slug'=>'ahmad-musopa'],[
+        Staff::updateOrCreate(['slug'=>'ahmad_musopa'],[
             'name'=>'Ahmad Musopa, S.Pd.I., M.Pd.','position'=>'Kepala Madrasah','subject'=>null,'type'=>'principal','photo'=>'demo/principal.svg',
             'bio'=>'Pendidikan merupakan ikhtiar bersama untuk membentuk generasi yang berkarakter, cerdas, kreatif, dan bertanggung jawab. Mari membangun madrasah yang aman, nyaman, berprestasi, dan memberi manfaat bagi masyarakat.','sort_order'=>0,'active'=>true
         ]);
@@ -124,11 +124,11 @@ class DatabaseSeeder extends Seeder
             ['Nur Aini, S.Pd.','Guru','Bahasa Inggris'],
             ['M. Ridwan, S.Pd.','Guru','Fisika'],
         ];
-        foreach($teachers as $i=>$teacher) Staff::updateOrCreate(['slug'=>(string) str($teacher[0])->slug()],['name'=>$teacher[0],'position'=>$teacher[1],'subject'=>$teacher[2],'type'=>'teacher','photo'=>'demo/person-'.(($i%4)+1).'.svg','bio'=>'Tenaga pendidik yang berdedikasi mendampingi perkembangan akademik dan karakter peserta didik.','sort_order'=>$i+1,'active'=>true]);
-        foreach([['Sri Wahyuni, S.E.','Kepala Tata Usaha'],['Agus Setiawan','Staf Administrasi'],['Dewi Lestari','Operator Madrasah']] as $i=>$employee) Staff::updateOrCreate(['slug'=>(string) str($employee[0])->slug()],['name'=>$employee[0],'position'=>$employee[1],'type'=>'employee','photo'=>'demo/person-'.(($i%4)+1).'.svg','sort_order'=>$i+1,'active'=>true]);
+        foreach($teachers as $i=>$teacher) Staff::updateOrCreate(['slug'=>(string) str($teacher[0])->slug('_')],['name'=>$teacher[0],'position'=>$teacher[1],'subject'=>$teacher[2],'type'=>'teacher','photo'=>'demo/person-'.(($i%4)+1).'.svg','bio'=>'Tenaga pendidik yang berdedikasi mendampingi perkembangan akademik dan karakter peserta didik.','sort_order'=>$i+1,'active'=>true]);
+        foreach([['Sri Wahyuni, S.E.','Kepala Tata Usaha'],['Agus Setiawan','Staf Administrasi'],['Dewi Lestari','Operator Madrasah']] as $i=>$employee) Staff::updateOrCreate(['slug'=>(string) str($employee[0])->slug('_')],['name'=>$employee[0],'position'=>$employee[1],'type'=>'employee','photo'=>'demo/person-'.(($i%4)+1).'.svg','sort_order'=>$i+1,'active'=>true]);
 
         $banners = [
-            ['title'=>'Tumbuh dalam Iman, Unggul dalam Prestasi','subtitle'=>'Lingkungan belajar modern yang memadukan karakter keislaman, akademik, teknologi, dan kepemimpinan.','button_text'=>'Jelajahi Madrasah','button_url'=>'/profil/selayang-pandang','image'=>'demo/hero-1.svg','sort_order'=>1],
+            ['title'=>'Tumbuh dalam Iman, Unggul dalam Prestasi','subtitle'=>'Lingkungan belajar modern yang memadukan karakter keislaman, akademik, teknologi, dan kepemimpinan.','button_text'=>'Jelajahi Madrasah','button_url'=>'/profil/selayang_pandang','image'=>'demo/hero-1.svg','sort_order'=>1],
             ['title'=>'SPMB Tahun Pelajaran 2026/2027','subtitle'=>'Saatnya menjadi bagian dari keluarga besar MAN 1 Lampung Selatan dan mengembangkan potensi terbaikmu.','button_text'=>'Informasi Pendaftaran','button_url'=>'/pengumuman','image'=>'demo/hero-2.svg','sort_order'=>2],
         ];
         foreach($banners as $banner) Banner::updateOrCreate(['title'=>$banner['title']],array_merge($banner,['active'=>true]));
@@ -141,7 +141,7 @@ class DatabaseSeeder extends Seeder
             ['title'=>'Pramuka Raih Tiga Piala pada Perkemahan Tingkat Kabupaten','category'=>'prestasi','excerpt'=>'Tim Pramuka menorehkan prestasi membanggakan dalam kompetisi tingkat kabupaten.','content'=>'<p>Prestasi ini merupakan hasil latihan disiplin, kekompakan tim, dan dukungan pembina. Madrasah memberikan apresiasi kepada seluruh peserta.</p>','image'=>'demo/achievement.svg','published_at'=>now()->subMonths(2)],
             ['title'=>'Membangun Kebiasaan Belajar yang Efektif di Era Digital','category'=>'artikel','excerpt'=>'Strategi sederhana agar teknologi membantu proses belajar, bukan menjadi gangguan.','content'=>'<p>Belajar efektif dimulai dari tujuan yang jelas, jadwal realistis, lingkungan yang mendukung, dan evaluasi rutin. Gunakan teknologi untuk mengakses sumber belajar, membuat catatan, serta berkolaborasi secara sehat.</p><h3>Langkah praktis</h3><ol><li>Tentukan target harian.</li><li>Gunakan sesi fokus 25–45 menit.</li><li>Matikan notifikasi yang tidak diperlukan.</li><li>Tutup sesi dengan rangkuman singkat.</li></ol>','image'=>'demo/article.svg','published_at'=>now()->subDays(15)],
         ];
-        foreach($posts as $post) Post::updateOrCreate(['slug'=>(string) str($post['title'])->slug()],array_merge($post,['author_id'=>$admin->id,'author_name'=>$admin->name,'slug'=>(string) str($post['title'])->slug(),'status'=>'published','featured'=>$post['featured']??false]));
+        foreach($posts as $post) Post::updateOrCreate(['slug'=>(string) str($post['title'])->slug('_')],array_merge($post,['author_id'=>$admin->id,'author_name'=>$admin->name,'slug'=>(string) str($post['title'])->slug('_'),'status'=>'published','featured'=>$post['featured']??false]));
 
         foreach([
             ['PPDBM dan Masa Taaruf Siswa','photo','demo/gallery-1.svg',null],
@@ -149,10 +149,10 @@ class DatabaseSeeder extends Seeder
             ['Kegiatan Laboratorium Komputer','photo','demo/gallery-3.svg',null],
             ['Prestasi Siswa','photo','demo/gallery-4.svg',null],
             ['Profil MAN 1 Lampung Selatan','video','demo/gallery-video.svg','https://www.youtube.com/'],
-        ] as $item) Gallery::updateOrCreate(['slug'=>(string) str($item[0])->slug()],['title'=>$item[0],'slug'=>(string) str($item[0])->slug(),'type'=>$item[1],'image'=>$item[2],'video_url'=>$item[3],'description'=>'Dokumentasi kegiatan MAN 1 Lampung Selatan.','published_at'=>now()->subDays(rand(3,60)),'active'=>true]);
+        ] as $item) Gallery::updateOrCreate(['slug'=>(string) str($item[0])->slug('_')],['title'=>$item[0],'slug'=>(string) str($item[0])->slug('_'),'type'=>$item[1],'image'=>$item[2],'video_url'=>$item[3],'description'=>'Dokumentasi kegiatan MAN 1 Lampung Selatan.','published_at'=>now()->subDays(rand(3,60)),'active'=>true]);
 
         Infographic::updateOrCreate(
-            ['slug' => 'profil-peserta-didik-2026'],
+            ['slug' => 'profil_peserta_didik_2026'],
             [
                 'title' => 'Profil Peserta Didik MAN 1 Lampung Selatan Tahun 2026',
                 'meta_title' => 'Infografis Profil Peserta Didik MAN 1 Lampung Selatan 2026',
@@ -182,6 +182,6 @@ class DatabaseSeeder extends Seeder
             ['Masa Taaruf Siswa Madrasah',now()->addDays(12)->setTime(7,30),'Aula dan lingkungan madrasah'],
             ['Rapat Komite dan Orang Tua',now()->addDays(18)->setTime(9,0),'Aula MAN 1 Lampung Selatan'],
             ['Pembinaan Olimpiade Sains',now()->addDays(25)->setTime(13,30),'Laboratorium Sains'],
-        ] as $event) Event::updateOrCreate(['slug'=>(string) str($event[0])->slug()],['title'=>$event[0],'slug'=>(string) str($event[0])->slug(),'starts_at'=>$event[1],'location'=>$event[2],'description'=>'Agenda resmi madrasah. Jadwal dapat berubah dan akan diperbarui melalui portal ini.','active'=>true]);
+        ] as $event) Event::updateOrCreate(['slug'=>(string) str($event[0])->slug('_')],['title'=>$event[0],'slug'=>(string) str($event[0])->slug('_'),'starts_at'=>$event[1],'location'=>$event[2],'description'=>'Agenda resmi madrasah. Jadwal dapat berubah dan akan diperbarui melalui portal ini.','active'=>true]);
     }
 }

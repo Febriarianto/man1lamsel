@@ -8,7 +8,7 @@
 <form method="post" enctype="multipart/form-data" action="{{ $editing?route('admin.infographics.update',$infographic):route('admin.infographics.store') }}">@csrf @if($editing)@method('put')@endif
 <div class="row g-4"><div class="col-xl-8"><div class="admin-card p-4"><div class="row g-3">
 <div class="col-12"><label class="form-label">Judul</label><input name="title" value="{{ old('title',$infographic->title) }}" class="form-control form-control-lg" required></div>
-<div class="col-md-6"><label class="form-label">Slug URL</label><input name="slug" value="{{ old('slug',$infographic->slug) }}" class="form-control" placeholder="otomatis-dari-judul"></div>
+<div class="col-md-6"><label class="form-label">Slug URL <small>(format underscore)</small></label><input name="slug" value="{{ old('slug',$infographic->slug) }}" class="form-control" placeholder="otomatis_dari_judul"></div>
 <div class="col-md-6"><label class="form-label">Nama Sumber Data</label><input name="source_name" value="{{ old('source_name',$infographic->source_name) }}" class="form-control" placeholder="Contoh: EMIS Madrasah"></div>
 <div class="col-12"><label class="form-label">URL Sumber</label><input type="url" name="source_url" value="{{ old('source_url',$infographic->source_url) }}" class="form-control" placeholder="https://..."></div>
 <div class="col-12"><label class="form-label">Deskripsi</label><textarea name="description" rows="6" class="form-control">{{ old('description',$infographic->description) }}</textarea></div>

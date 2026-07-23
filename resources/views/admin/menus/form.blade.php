@@ -17,7 +17,7 @@
         <div class="col-md-3"><label class="form-label">Urutan</label><input type="number" min="0" name="sort_order" value="{{ old('sort_order',$menu->sort_order??0) }}" class="form-control"></div>
         <div class="col-12"><div class="form-check form-switch"><input type="checkbox" class="form-check-input" name="active" value="1" id="active" @checked(old('active',$menu->exists?$menu->active:true))><label for="active" class="form-check-label">Tampilkan menu di navbar</label></div></div>
     </div></div></div>
-    <div class="col-xl-4"><div class="admin-card p-4"><h5>Contoh URL Internal</h5><div class="small text-secondary d-grid gap-2"><code>/</code><code>/profil/visi-dan-misi</code><code>/berita</code><code>/infografis</code><code>/galeri-foto</code><code>/hubungi-kami</code></div></div><button class="btn btn-primary btn-lg w-100 mt-4"><i class="bi bi-check2-circle me-1"></i> Simpan Menu</button></div>
+    <div class="col-xl-4"><div class="admin-card p-4"><h5>Contoh URL Internal</h5><div class="small text-secondary d-grid gap-2"><code>/</code><code>/profil/visi_dan_misi</code><code>/berita</code><code>/infografis</code><code>/galeri-foto</code><code>/hubungi-kami</code></div></div><button class="btn btn-primary btn-lg w-100 mt-4"><i class="bi bi-check2-circle me-1"></i> Simpan Menu</button></div>
 </div>
 </form>
 @endsection

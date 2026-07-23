@@ -20,6 +20,8 @@ class GalleryController extends Controller
     public function destroy(Gallery $gallery) { if($gallery->image && !str_starts_with($gallery->image,'demo/')) Storage::disk('public')->delete($gallery->image); $gallery->delete(); return back()->with('success','Galeri berhasil dihapus.'); }
     private function validated(Request $request, ?Gallery $gallery=null): array
     {
-        return $request->validate(['title'=>['required','string','max:255'],'slug'=>['nullable','string','max:255',Rule::unique('galleries','slug')->ignore($gallery?->id)],'type'=>['required',Rule::in(['photo','video'])],'image'=>['nullable','image','max:4096'],'video_url'=>['nullable','url','max:500'],'description'=>['nullable','string','max:2000'],'published_at'=>['nullable','date']]);
+        $request->merge(['slug' => Gallery::makeSlug($request->input('slug') ?: $request->input('title'))]);
+
+        return $request->validate(['title'=>['required','string','max:255'],'slug'=>['required','string','max:255','regex:/^[a-z0-9]+(?:_[a-z0-9]+)*$/',Rule::unique('galleries','slug')->ignore($gallery?->id)],'type'=>['required',Rule::in(['photo','video'])],'image'=>['nullable','image','max:4096'],'video_url'=>['nullable','url','max:500'],'description'=>['nullable','string','max:2000'],'published_at'=>['nullable','date']]);
     }
 }

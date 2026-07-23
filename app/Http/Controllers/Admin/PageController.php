@@ -37,10 +37,12 @@ class PageController extends Controller
     }
     private function validated(Request $request, ?Page $page = null): array
     {
+        $request->merge(['slug' => Page::makeSlug($request->input('slug') ?: $request->input('title'))]);
+
         return $request->validate([
             'title'=>['required','string','max:255'],
             'meta_title'=>['nullable','string','max:255'],
-            'slug'=>['nullable','string','max:255',Rule::unique('pages','slug')->ignore($page?->id)],
+            'slug'=>['required','string','max:255','regex:/^[a-z0-9]+(?:_[a-z0-9]+)*$/',Rule::unique('pages','slug')->ignore($page?->id)],
             'excerpt'=>['nullable','string','max:500'],
             'meta_description'=>['nullable','string','max:500'],
             'meta_keywords'=>['nullable','string','max:500'],

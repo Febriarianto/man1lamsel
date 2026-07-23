@@ -18,5 +18,10 @@ class EventController extends Controller
     public function edit(Event $event){ return view('admin.events.form',compact('event')); }
     public function update(Request $request,Event $event){ $data=$this->validated($request,$event); $data['image']=$this->storeImage($request->file('image'),'events',$event->image); $data['active']=$request->boolean('active'); $event->update($data); return redirect()->route('admin.events.index')->with('success','Agenda berhasil diperbarui.'); }
     public function destroy(Event $event){ if($event->image && !str_starts_with($event->image,'demo/')) Storage::disk('public')->delete($event->image); $event->delete(); return back()->with('success','Agenda berhasil dihapus.'); }
-    private function validated(Request $request, ?Event $event=null): array { return $request->validate(['title'=>['required','string','max:255'],'slug'=>['nullable','string','max:255',Rule::unique('events','slug')->ignore($event?->id)],'starts_at'=>['required','date'],'ends_at'=>['nullable','date','after_or_equal:starts_at'],'location'=>['nullable','string','max:255'],'description'=>['nullable','string','max:3000'],'image'=>['nullable','image','max:4096']]); }
+    private function validated(Request $request, ?Event $event=null): array
+    {
+        $request->merge(['slug' => Event::makeSlug($request->input('slug') ?: $request->input('title'))]);
+
+        return $request->validate(['title'=>['required','string','max:255'],'slug'=>['required','string','max:255','regex:/^[a-z0-9]+(?:_[a-z0-9]+)*$/',Rule::unique('events','slug')->ignore($event?->id)],'starts_at'=>['required','date'],'ends_at'=>['nullable','date','after_or_equal:starts_at'],'location'=>['nullable','string','max:255'],'description'=>['nullable','string','max:3000'],'image'=>['nullable','image','max:4096']]);
+    }
 }

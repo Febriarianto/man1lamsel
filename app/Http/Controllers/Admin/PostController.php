@@ -111,10 +111,14 @@ class PostController extends Controller
 
     private function validated(Request $request, ?Post $post = null): array
     {
+        $request->merge([
+            'slug' => Post::makeSlug($request->input('slug') ?: $request->input('title')),
+        ]);
+
         return $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'meta_title' => ['nullable', 'string', 'max:255'],
-            'slug' => ['nullable', 'string', 'max:255', Rule::unique('posts', 'slug')->ignore($post?->id)],
+            'slug' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(?:_[a-z0-9]+)*$/', Rule::unique('posts', 'slug')->ignore($post?->id)],
             'category' => ['required', Rule::in(['berita', 'artikel', 'pengumuman', 'prestasi'])],
             'excerpt' => ['nullable', 'string', 'max:500'],
             'meta_description' => ['nullable', 'string', 'max:500'],

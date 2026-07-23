@@ -1,6 +1,6 @@
-# MAN 1 Lampung Selatan — Modern School CMS v1.6
+# MAN 1 Lampung Selatan — Modern School CMS v1.7
 
-Portal sekolah dan CMS modern berbasis **Laravel 12**, **PHP 8.2+**, dan **MySQL**. Versi 1.6 menambahkan akun penulis manual dengan email dan kata sandi, tanpa menghilangkan login SSO Kemenag maupun Theme Color Manager.
+Portal sekolah dan CMS modern berbasis **Laravel 12**, **PHP 8.2+**, dan **MySQL**. Versi 1.7 menyatukan editor artikel dan halaman menggunakan Summernote, mengubah format slug menjadi underscore, serta menyempurnakan proporsi halaman baca berita.
 
 ## Fitur Utama
 
@@ -9,6 +9,7 @@ Portal sekolah dan CMS modern berbasis **Laravel 12**, **PHP 8.2+**, dan **MySQL
 - Beranda modern dengan banner dinamis.
 - Berita, artikel, pengumuman, prestasi, agenda, pencarian, profil, guru/staf, galeri, dan infografis.
 - Navbar bertingkat, branding dinamis, SEO global dan per konten, Open Graph, sitemap, dan robots.
+- Halaman baca berita responsif dengan lebar teks, gambar sampul, tipografi, dan tombol berbagi yang proporsional.
 - Nama penulis tampil pada halaman artikel dan tetap tersimpan walaupun data akun kemudian berubah.
 - Tema publik dinamis dengan komposisi awal Putih 75%, Biru 18%, Kuning 5%, dan Hitam/Abu 2%.
 - Motif geometris dan strip identitas mengikuti desain kartu identitas murid.
@@ -22,6 +23,7 @@ Portal sekolah dan CMS modern berbasis **Laravel 12**, **PHP 8.2+**, dan **MySQL
 - Membuat akun penulis manual serta menetapkan atau mereset kata sandinya.
 - Login lokal administrator tetap tersedia.
 - Theme Color Manager dengan live preview, preset warna, pengaturan komposisi, dan pilihan penerapan warna ke dashboard.
+- Summernote sebagai editor visual untuk seluruh isi berita, artikel, dan halaman profil.
 
 ### Ruang Penulis Guru/Pegawai
 
@@ -39,6 +41,16 @@ Portal sekolah dan CMS modern berbasis **Laravel 12**, **PHP 8.2+**, dan **MySQL
 Administrator dapat membuka **Pengguna & Penulis → Tambah Penulis Manual**, kemudian mengisi nama, email, kata sandi, NIP, dan unit kerja. Akun baru otomatis memiliki role `author` dan dapat langsung memakai halaman login CMS yang sama dengan administrator.
 
 Penulis manual hanya dapat melihat artikel miliknya sendiri. Artikel selalu disimpan sebagai draft dan baru dapat diterbitkan oleh administrator. Penulis dapat mengganti kata sandinya melalui **Akun Saya**, sedangkan administrator dapat meresetnya melalui halaman edit pengguna.
+
+## Format Slug
+
+Slug konten memakai underscore, misalnya:
+
+```text
+judul_berita_baru
+```
+
+Slug dikonversi otomatis dari judul maupun input manual. Tautan lama yang masih menggunakan tanda minus tetap dapat dibuka untuk menjaga kompatibilitas.
 
 ## Kebutuhan Server
 

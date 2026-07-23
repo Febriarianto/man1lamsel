@@ -35,8 +35,10 @@ class StaffController extends Controller
     }
     private function validated(Request $request, ?Staff $staff=null): array
     {
+        $request->merge(['slug' => Staff::makeSlug($request->input('slug') ?: $request->input('name'))]);
+
         return $request->validate([
-            'name'=>['required','string','max:150'],'slug'=>['nullable','string','max:160',Rule::unique('staff','slug')->ignore($staff?->id)],
+            'name'=>['required','string','max:150'],'slug'=>['required','string','max:160','regex:/^[a-z0-9]+(?:_[a-z0-9]+)*$/',Rule::unique('staff','slug')->ignore($staff?->id)],
             'position'=>['required','string','max:150'],'subject'=>['nullable','string','max:150'],'type'=>['required',Rule::in(['kepala','guru','pegawai'])],
             'photo'=>['nullable','image','max:3072'],'bio'=>['nullable','string','max:3000'],'sort_order'=>['required','integer','min:0'],
         ]);

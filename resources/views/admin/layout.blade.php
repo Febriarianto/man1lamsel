@@ -12,6 +12,7 @@
     <link rel="icon" href="{{ $adminFavicon }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/summernote@0.9.1/dist/summernote-lite.min.css" rel="stylesheet">
     <link href="{{ asset('assets/css/admin.css') }}" rel="stylesheet">
     <style>:root{--brand:{{ $adminPrimary }};--brand-rgb:{{ \App\Models\Setting::hexToRgb($adminPrimary) }};--brand-dark:{{ $adminPrimaryDark }};--brand-dark-rgb:{{ \App\Models\Setting::hexToRgb($adminPrimaryDark,'#045A9D') }};--accent:{{ $adminAccent }};--accent-rgb:{{ \App\Models\Setting::hexToRgb($adminAccent,'#F4CD00') }};}</style>
 </head>
@@ -52,7 +53,33 @@
         </div>
     </main>
 </div>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-<script>document.getElementById('sidebarToggle')?.addEventListener('click',()=>document.body.classList.toggle('sidebar-open'));document.querySelectorAll('[data-confirm]').forEach(el=>el.addEventListener('click',e=>{if(!confirm(el.dataset.confirm||'Yakin?'))e.preventDefault()}));</script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.9.1/dist/summernote-lite.min.js"></script>
+<script>
+document.getElementById('sidebarToggle')?.addEventListener('click',()=>document.body.classList.toggle('sidebar-open'));
+document.querySelectorAll('[data-confirm]').forEach(el=>el.addEventListener('click',e=>{if(!confirm(el.dataset.confirm||'Yakin?'))e.preventDefault()}));
+
+$('.summernote-editor').each(function () {
+    $(this).summernote({
+        height: Number(this.dataset.height || 440),
+        minHeight: 260,
+        placeholder: this.dataset.placeholder || 'Tulis isi konten di sini...',
+        dialogsInBody: true,
+        toolbar: [
+            ['style', ['style']],
+            ['font', ['bold', 'italic', 'underline', 'clear']],
+            ['fontname', ['fontname']],
+            ['fontsize', ['fontsize']],
+            ['color', ['color']],
+            ['para', ['ul', 'ol', 'paragraph']],
+            ['height', ['height']],
+            ['table', ['table']],
+            ['insert', ['link', 'picture', 'video', 'hr']],
+            ['view', ['fullscreen', 'codeview', 'help']],
+        ],
+    });
+});
+</script>
 @stack('scripts')
 </body></html>

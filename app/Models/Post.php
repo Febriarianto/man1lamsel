@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasUnderscoreSlug;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Str;
 
 class Post extends Model
 {
+    use HasUnderscoreSlug;
+
     protected $fillable = [
         'author_id', 'author_name', 'title', 'meta_title', 'slug', 'category',
         'excerpt', 'meta_description', 'meta_keywords', 'content', 'image',
@@ -17,13 +19,6 @@ class Post extends Model
     protected function casts(): array
     {
         return ['featured' => 'boolean', 'published_at' => 'datetime'];
-    }
-
-    protected static function booted(): void
-    {
-        static::saving(function (Post $post): void {
-            $post->slug = $post->slug ?: Str::slug($post->title);
-        });
     }
 
     public function getRouteKeyName(): string
