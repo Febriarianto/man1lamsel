@@ -1,0 +1,19 @@
+PATCH MAN 1 LAMPUNG SELATAN v1.2 KE v1.3
+
+1. Backup database, file .env, dan folder storage/app/public.
+2. Salin seluruh isi folder patch ini ke root project v1.2 lalu pilih overwrite/replace.
+3. Jangan menghapus file .env, vendor, atau storage/app/public milik project lama.
+4. Jalankan dari terminal pada root project:
+
+   composer dump-autoload
+   php artisan migrate
+   php artisan db:seed --class=Database\Seeders\UpgradeV13Seeder
+   php artisan storage:link
+   php artisan optimize:clear
+
+5. Login admin dan periksa:
+   - Tampilan > Pengaturan & SEO
+   - Tampilan > Menu Navbar
+   - Konten > Infografis
+
+JANGAN menjalankan php artisan migrate:fresh pada database yang sudah berisi data.

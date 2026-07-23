@@ -1,0 +1,21 @@
+@extends('admin.layout')
+@php($editing=$infographic->exists)
+@section('title',$editing?'Edit Infografis':'Tambah Infografis')
+@section('page_title',$editing?'Edit Infografis':'Tambah Infografis')
+@section('page_subtitle','Unggah visual berkualitas tinggi beserta sumber datanya')
+@section('page_actions')<a href="{{ route('admin.infographics.index') }}" class="btn btn-light"><i class="bi bi-arrow-left me-1"></i> Kembali</a>@endsection
+@section('content')
+<form method="post" enctype="multipart/form-data" action="{{ $editing?route('admin.infographics.update',$infographic):route('admin.infographics.store') }}">@csrf @if($editing)@method('put')@endif
+<div class="row g-4"><div class="col-xl-8"><div class="admin-card p-4"><div class="row g-3">
+<div class="col-12"><label class="form-label">Judul</label><input name="title" value="{{ old('title',$infographic->title) }}" class="form-control form-control-lg" required></div>
+<div class="col-md-6"><label class="form-label">Slug URL</label><input name="slug" value="{{ old('slug',$infographic->slug) }}" class="form-control" placeholder="otomatis-dari-judul"></div>
+<div class="col-md-6"><label class="form-label">Nama Sumber Data</label><input name="source_name" value="{{ old('source_name',$infographic->source_name) }}" class="form-control" placeholder="Contoh: EMIS Madrasah"></div>
+<div class="col-12"><label class="form-label">URL Sumber</label><input type="url" name="source_url" value="{{ old('source_url',$infographic->source_url) }}" class="form-control" placeholder="https://..."></div>
+<div class="col-12"><label class="form-label">Deskripsi</label><textarea name="description" rows="6" class="form-control">{{ old('description',$infographic->description) }}</textarea></div>
+</div></div>
+<div class="admin-card p-4 mt-4"><h5 class="mb-3"><i class="bi bi-search me-2"></i>SEO Infografis</h5><div class="row g-3"><div class="col-12"><label class="form-label">Meta Title</label><input name="meta_title" maxlength="255" value="{{ old('meta_title',$infographic->meta_title) }}" class="form-control" placeholder="Kosongkan untuk memakai judul"></div><div class="col-12"><label class="form-label">Meta Description</label><textarea name="meta_description" maxlength="500" rows="3" class="form-control">{{ old('meta_description',$infographic->meta_description) }}</textarea></div><div class="col-12"><label class="form-label">Meta Keywords</label><input name="meta_keywords" value="{{ old('meta_keywords',$infographic->meta_keywords) }}" class="form-control" placeholder="kata kunci, dipisahkan, koma"></div></div></div>
+</div>
+<div class="col-xl-4"><div class="admin-card p-4"><h5 class="mb-3">Gambar Infografis</h5>@if($infographic->image)@php($img=str_starts_with($infographic->image,'demo/')?asset('images/'.$infographic->image):Storage::url($infographic->image))<img src="{{ $img }}" class="image-preview mb-3">@endif<input type="file" name="image" class="form-control" accept="image/*" @required(!$editing)><small class="text-secondary">Maksimal 8 MB. Format PNG/JPG/WebP, orientasi bebas.</small></div>
+<div class="admin-card p-4 mt-4"><label class="form-label">Tanggal Publikasi</label><input type="datetime-local" name="published_at" value="{{ old('published_at',optional($infographic->published_at)->format('Y-m-d\TH:i')?:now()->format('Y-m-d\TH:i')) }}" class="form-control mb-3"><label class="form-label">Urutan</label><input type="number" min="0" name="sort_order" value="{{ old('sort_order',$infographic->sort_order??0) }}" class="form-control mb-3"><div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" name="featured" value="1" id="featured" @checked(old('featured',$infographic->featured))><label class="form-check-label" for="featured">Jadikan unggulan</label></div><div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="active" value="1" id="active" @checked(old('active',$infographic->exists?$infographic->active:true))><label class="form-check-label" for="active">Tampilkan di website</label></div></div>
+<button class="btn btn-primary btn-lg w-100 mt-4"><i class="bi bi-check2-circle me-1"></i> Simpan Infografis</button></div></div></form>
+@endsection

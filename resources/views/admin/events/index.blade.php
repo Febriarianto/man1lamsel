@@ -1,0 +1,6 @@
+@extends('admin.layout')
+@section('title','Agenda')
+@section('page_title','Agenda')
+@section('page_subtitle','Kelola jadwal dan kegiatan mendatang')
+@section('page_actions')<a href="{{ route('admin.events.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Tambah Agenda</a>@endsection
+@section('content')<div class="admin-card"><div class="table-responsive"><table class="table align-middle"><thead><tr><th>Kegiatan</th><th>Waktu</th><th>Lokasi</th><th>Status</th><th class="text-end">Aksi</th></tr></thead><tbody>@forelse($events as $event)<tr><td><strong>{{ $event->title }}</strong></td><td>{{ $event->starts_at->format('d/m/Y H:i') }}</td><td>{{ $event->location?:'-' }}</td><td><span class="status-dot {{ $event->active?'published':'draft' }}">{{ $event->active?'Aktif':'Nonaktif' }}</span></td><td><div class="table-actions"><a href="{{ route('admin.events.edit',$event) }}" class="btn btn-light btn-sm"><i class="bi bi-pencil"></i></a><form method="post" action="{{ route('admin.events.destroy',$event) }}">@csrf @method('delete')<button data-confirm="Hapus agenda ini?" class="btn btn-light btn-sm text-danger"><i class="bi bi-trash"></i></button></form></div></td></tr>@empty<tr><td colspan="5" class="text-center py-5">Belum ada agenda.</td></tr>@endforelse</tbody></table></div><div class="p-3">{{ $events->links() }}</div></div>@endsection

@@ -1,0 +1,6 @@
+@extends('admin.layout')
+@section('title','Detail Pesan')
+@section('page_title','Detail Pesan')
+@section('page_subtitle','Dikirim pada '.$message->created_at->translatedFormat('d F Y, H:i'))
+@section('page_actions')<a href="{{ route('admin.messages.index') }}" class="btn btn-light"><i class="bi bi-arrow-left"></i> Kembali</a>@endsection
+@section('content')<div class="row g-4"><div class="col-lg-8"><div class="admin-card p-4"><span class="badge bg-light text-dark mb-3">{{ $message->subject }}</span><div class="message-body">{!! nl2br(e($message->message)) !!}</div></div></div><div class="col-lg-4"><div class="admin-card p-4"><h5>Informasi Pengirim</h5><dl class="message-detail"><dt>Nama</dt><dd>{{ $message->name }}</dd><dt>Email</dt><dd><a href="mailto:{{ $message->email }}">{{ $message->email }}</a></dd><dt>Telepon</dt><dd>{{ $message->phone?:'-' }}</dd></dl><a href="mailto:{{ $message->email }}?subject=Re: {{ urlencode($message->subject) }}" class="btn btn-primary w-100"><i class="bi bi-reply me-2"></i>Balas via Email</a><form class="mt-2" method="post" action="{{ route('admin.messages.destroy',$message) }}">@csrf @method('delete')<button data-confirm="Hapus pesan ini?" class="btn btn-outline-danger w-100">Hapus Pesan</button></form></div></div></div>@endsection
