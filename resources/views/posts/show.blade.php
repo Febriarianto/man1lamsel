@@ -16,7 +16,7 @@
                     'prestasi' => route('posts.achievements'),
                     default => route('posts.news'),
                 } }}">{{ ucfirst($post->category) }}</a>
-                <h1>{{ $post->title }}</h1>
+                <h2>{{ $post->title }}</h2>
                 @if($post->excerpt)<p class="article-summary">{{ $post->excerpt }}</p>@endif
                 <div class="article-meta">
                     <span><i class="bi bi-calendar3"></i> {{ optional($post->published_at)->translatedFormat('d F Y') }}</span>
@@ -30,10 +30,10 @@
     <section class="article-reading-section">
         <div class="container article-reading-wrap">
             @if($post->image)
-                @php($img=str_starts_with($post->image,'demo/')?asset('images/'.$post->image):Storage::url($post->image))
-                <figure class="article-cover-wrap">
-                    <img src="{{ $img }}" class="article-cover" alt="{{ $post->title }}">
-                </figure>
+            @php($img=str_starts_with($post->image,'demo/')?asset('images/'.$post->image):Storage::url($post->image))
+            <figure class="article-cover-wrap">
+                <img src="{{ $img }}" class="article-cover" alt="{{ $post->title }}">
+            </figure>
             @endif
 
             <div class="article-content-card">
@@ -55,7 +55,9 @@
 <section class="section-space bg-soft related-content">
     <div class="container">
         <div class="d-flex justify-content-between align-items-end gap-3 mb-4">
-            <div><span class="section-eyebrow">Bacaan Lainnya</span><h2 class="section-title mb-0">Konten terkait</h2></div>
+            <div><span class="section-eyebrow">Bacaan Lainnya</span>
+                <h2 class="section-title mb-0">Konten terkait</h2>
+            </div>
         </div>
         <div class="row g-4">
             @foreach($related as $item)
