@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Staff;
 use App\Models\User;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
@@ -20,167 +22,181 @@ class SsoController extends Controller
     public function redirect(Request $request): RedirectResponse
     {
         abort_unless(config('kemenag-sso.enabled'), 404);
+
+        if (blank(config('kemenag-sso.app_id'))) {
+            return redirect()->route('admin.login')
+                ->with('error', 'APP ID SSO Kemenag belum diisi oleh administrator.');
+        }
+
         $this->ensureConfigured();
 
-        $state = Str::random(48);
-        $nonce = Str::random(48);
-        $request->session()->put('kemenag_sso_state', $state);
-        $request->session()->put('kemenag_sso_nonce', $nonce);
+        $request->session()->put('kemenag_sso_login_started_at', now()->timestamp);
+        $request->session()->put('kemenag_sso_login_attempt', Str::random(40));
 
-        $query = http_build_query([
-            'client_id' => config('kemenag-sso.client_id'),
-            'redirect_uri' => $this->redirectUri(),
-            'response_type' => 'code',
-            'scope' => implode(' ', config('kemenag-sso.scopes', [])),
-            'state' => $state,
-            'nonce' => $nonce,
-        ], '', '&', PHP_QUERY_RFC3986);
+        $separator = str_contains((string) config('kemenag-sso.signin_url'), '?') ? '&' : '?';
+        $url = rtrim((string) config('kemenag-sso.signin_url'), '&?')
+            .$separator
+            .http_build_query(['appid' => config('kemenag-sso.app_id')], '', '&', PHP_QUERY_RFC3986);
 
-        return redirect()->away(rtrim((string) config('kemenag-sso.authorization_url'), '?').'?'.$query);
+        return redirect()->away($url);
     }
 
     public function callback(Request $request): RedirectResponse
     {
         abort_unless(config('kemenag-sso.enabled'), 404);
 
-        if ($request->filled('error')) {
-            $message = $request->string('error_description')->toString() ?: $request->string('error')->toString();
-            return redirect()->route('admin.login')->with('error', 'Login SSO dibatalkan atau ditolak: '.$message);
-        }
-
-        $expectedState = (string) $request->session()->pull('kemenag_sso_state');
-        $request->session()->forget('kemenag_sso_nonce');
-        $receivedState = (string) $request->input('state');
-
-        if ($expectedState === '' || $receivedState === '' || ! hash_equals($expectedState, $receivedState)) {
-            return redirect()->route('admin.login')->with('error', 'Validasi keamanan SSO gagal. Silakan ulangi proses login.');
-        }
-
-        $code = (string) $request->input('code');
-        if ($code === '') {
-            return redirect()->route('admin.login')->with('error', 'Kode otorisasi SSO tidak diterima.');
-        }
-
         try {
             $this->ensureConfigured();
-            $token = $this->exchangeCode($code);
-            $profile = $this->fetchProfile($token);
-            $user = $this->resolveUser($profile);
+            $this->validateLoginAttempt($request);
+
+            $tokenParameter = (string) config('kemenag-sso.callback_token_parameter', 'token');
+            $token = trim((string) $request->query($tokenParameter));
+            if ($token === '') {
+                throw new RuntimeException('Token callback SSO tidak diterima.');
+            }
+
+            $pegawai = $this->verifyToken($token);
+            $user = $this->resolveUser($pegawai);
 
             if (! $user->active) {
-                return redirect()->route('admin.login')->with('error', 'Akun Anda belum aktif atau telah dinonaktifkan oleh administrator.');
+                return redirect()->route('admin.login')
+                    ->with('error', 'Akun Anda belum aktif atau telah dinonaktifkan oleh administrator.');
             }
 
             Auth::login($user, true);
             $request->session()->regenerate();
+            $request->session()->put('authenticated_via', 'kemenag_sso');
 
-            return redirect()->intended(route('admin.dashboard'))->with('success', 'Berhasil masuk melalui SSO Kemenag.');
+            return redirect()->intended(route('admin.dashboard'))
+                ->with('success', 'Berhasil masuk melalui SSO Kemenag.');
         } catch (Throwable $exception) {
-            Log::error('Kemenag SSO callback failed', [
+            Log::warning('Kemenag SIMPEG SSO login failed', [
                 'message' => $exception->getMessage(),
                 'exception' => get_class($exception),
             ]);
 
-            return redirect()->route('admin.login')->with('error', 'Login SSO belum berhasil. Periksa konfigurasi atau hubungi administrator aplikasi.');
+            return redirect()->route('admin.login')
+                ->with('error', $this->safeErrorMessage($exception));
+        } finally {
+            $request->session()->forget([
+                'kemenag_sso_login_started_at',
+                'kemenag_sso_login_attempt',
+            ]);
         }
     }
 
-    private function exchangeCode(string $code): string
+    private function validateLoginAttempt(Request $request): void
     {
-        $payload = [
-            'grant_type' => 'authorization_code',
-            'code' => $code,
-            'redirect_uri' => $this->redirectUri(),
-        ];
+        $startedAt = (int) $request->session()->get('kemenag_sso_login_started_at', 0);
+        $attempt = (string) $request->session()->get('kemenag_sso_login_attempt', '');
+        $ttl = max(60, (int) config('kemenag-sso.login_attempt_ttl', 600));
 
-        $request = $this->http()->asForm();
-        if (config('kemenag-sso.token_auth_method') === 'client_secret_basic') {
-            $request = $request->withBasicAuth(
-                (string) config('kemenag-sso.client_id'),
-                (string) config('kemenag-sso.client_secret')
-            );
-            $payload['client_id'] = config('kemenag-sso.client_id');
-        } else {
-            $payload['client_id'] = config('kemenag-sso.client_id');
-            $payload['client_secret'] = config('kemenag-sso.client_secret');
+        if ($startedAt === 0 || $attempt === '' || now()->timestamp - $startedAt > $ttl) {
+            throw new RuntimeException('Sesi login SSO tidak ditemukan atau sudah kedaluwarsa.');
         }
-
-        $response = $request->post((string) config('kemenag-sso.token_url'), $payload);
-        if (! $response->successful()) {
-            throw new RuntimeException('Token endpoint merespons HTTP '.$response->status());
-        }
-
-        $accessToken = (string) $response->json('access_token');
-        if ($accessToken === '') {
-            throw new RuntimeException('Access token tidak ditemukan pada respons SSO.');
-        }
-
-        return $accessToken;
     }
 
-    private function fetchProfile(string $accessToken): array
+    private function verifyToken(string $token): array
     {
+        $method = strtoupper((string) config('kemenag-sso.verify_method', 'POST'));
+        if (! in_array($method, ['GET', 'POST'], true)) {
+            throw new RuntimeException('Metode verifikasi SSO harus GET atau POST.');
+        }
+
         $response = $this->http()
             ->acceptJson()
-            ->withToken($accessToken)
-            ->get((string) config('kemenag-sso.userinfo_url'));
+            ->withToken($token)
+            ->send($method, (string) config('kemenag-sso.verify_url'));
 
         if (! $response->successful()) {
-            throw new RuntimeException('UserInfo endpoint merespons HTTP '.$response->status());
+            throw new RuntimeException('Server verifikasi SSO merespons HTTP '.$response->status().'.');
         }
 
-        $profile = $response->json();
-        if (! is_array($profile)) {
-            throw new RuntimeException('Format profil SSO tidak valid.');
+        $payload = $response->json();
+        if (! is_array($payload)) {
+            throw new RuntimeException('Respons verifikasi SSO bukan JSON yang valid.');
         }
 
-        return $profile;
+        $status = data_get($payload, 'status');
+        if ($status !== null && (string) $status !== '200') {
+            throw new RuntimeException('Token SSO ditolak oleh server Kemenag.');
+        }
+
+        $pegawai = data_get($payload, 'pegawai')
+            ?? data_get($payload, 'data.pegawai')
+            ?? data_get($payload, 'data');
+
+        if (! is_array($pegawai) || $this->firstValue($pegawai, ['NIP', 'nip']) === '') {
+            throw new RuntimeException('Data pegawai atau NIP tidak ditemukan pada respons SSO.');
+        }
+
+        return $pegawai;
     }
 
-    private function resolveUser(array $profile): User
+    private function resolveUser(array $pegawai): User
     {
-        $claims = config('kemenag-sso.claims');
-        $providerId = trim((string) data_get($profile, $claims['id']));
-        $name = trim((string) data_get($profile, $claims['name']));
-        $email = strtolower(trim((string) data_get($profile, $claims['email'])));
-        $nip = trim((string) data_get($profile, $claims['nip']));
-        $unit = trim((string) data_get($profile, $claims['unit']));
-        $avatar = trim((string) data_get($profile, $claims['avatar']));
-
-        if ($providerId === '' || $email === '') {
-            throw new RuntimeException('Claim ID atau email tidak tersedia dari SSO.');
+        $nip = $this->normalizeNip($this->firstValue($pegawai, ['NIP', 'nip', 'NIP_LAMA', 'nip_lama']));
+        if ($nip === '') {
+            throw new RuntimeException('NIP dari SSO tidak valid.');
         }
 
-        $this->ensureAllowedDomain($email);
+        $name = $this->firstValue($pegawai, ['NAMA', 'nama', 'NAMA_LENGKAP', 'nama_lengkap']);
+        $email = strtolower($this->firstValue($pegawai, ['EMAIL', 'email', 'EMAIL_KANTOR', 'email_kantor']));
+        $unit = $this->firstValue($pegawai, [
+            'SATKER_1',
+            'satker_1',
+            'SATUAN_KERJA',
+            'satuan_kerja',
+            'KETERANGAN_SATUAN_KERJA',
+            'keterangan_satuan_kerja',
+            'SATKER_2',
+            'satker_2',
+        ]);
+        $avatar = $this->firstValue($pegawai, ['PHOTO', 'photo', 'FOTO', 'foto']);
 
-        $user = User::query()
-            ->where(fn ($query) => $query
-                ->where(fn ($byProvider) => $byProvider
-                    ->where('auth_provider', 'kemenag_sso')
-                    ->where('provider_id', $providerId))
-                ->orWhere('email', $email))
-            ->first();
+        $staff = Staff::query()->where('nip', $nip)->first();
+        if (config('kemenag-sso.require_staff_match') && (! $staff || ! $staff->active)) {
+            throw new RuntimeException('NIP belum terdaftar sebagai GTK aktif pada website.');
+        }
+
+        $candidates = $this->userCandidates($nip, $email, $staff);
+        if ($candidates->count() > 1) {
+            throw new RuntimeException('NIP atau email terhubung ke lebih dari satu akun. Hubungi administrator.');
+        }
+
+        $user = $candidates->first();
+        $alreadyLinkedToSso = $user
+            && $user->usesSso()
+            && hash_equals((string) $user->provider_id, $nip);
+
+        if ($user && $user->isAdmin() && ! $alreadyLinkedToSso) {
+            throw new RuntimeException('Akun administrator tidak dapat ditautkan ke SSO secara otomatis.');
+        }
 
         if (! $user && ! config('kemenag-sso.auto_provision')) {
-            throw new RuntimeException('Akun belum terdaftar pada aplikasi.');
+            throw new RuntimeException('Akun SSO belum didaftarkan oleh administrator.');
         }
 
-        $user ??= new User([
-            'role' => in_array(config('kemenag-sso.default_role'), ['admin', 'author'], true)
-                ? config('kemenag-sso.default_role')
-                : 'author',
-            'active' => true,
-            'password' => Hash::make(Str::random(64)),
-        ]);
+        if (! $user) {
+            $user = new User([
+                'role' => 'author',
+                'active' => true,
+                'password' => Hash::make(Str::random(64)),
+                'auth_provider' => 'kemenag_sso',
+            ]);
+        } elseif ($user->auth_provider === 'local') {
+            $user->auth_provider = 'local_kemenag_sso';
+        }
 
+        $resolvedEmail = $this->resolveEmail($email, $nip, $user);
         $user->fill([
-            'name' => $name !== '' ? $name : $email,
-            'email' => $email,
-            'auth_provider' => 'kemenag_sso',
-            'provider_id' => $providerId,
-            'nip' => $nip !== '' ? $nip : null,
-            'unit_name' => $unit !== '' ? $unit : null,
-            'avatar' => $avatar !== '' ? $avatar : null,
+            'staff_id' => $staff?->id,
+            'name' => $name !== '' ? $name : ($staff?->name ?: $user->name ?: 'Pegawai Kemenag'),
+            'email' => $resolvedEmail,
+            'provider_id' => $nip,
+            'nip' => $nip,
+            'unit_name' => $unit !== '' ? $unit : ($user->unit_name ?: $staff?->subject),
+            'avatar' => $avatar !== '' ? $avatar : $user->avatar,
             'last_login_at' => now(),
         ]);
         $user->save();
@@ -188,32 +204,101 @@ class SsoController extends Controller
         return $user;
     }
 
-    private function ensureAllowedDomain(string $email): void
+    private function userCandidates(string $nip, string $email, ?Staff $staff): Collection
     {
-        $domains = config('kemenag-sso.allowed_email_domains', []);
-        if ($domains === []) {
-            return;
+        if (! config('kemenag-sso.auto_link_by_nip')) {
+            return User::query()
+                ->whereIn('auth_provider', ['kemenag_sso', 'local_kemenag_sso'])
+                ->where('provider_id', $nip)
+                ->get();
         }
 
-        $domain = strtolower((string) Str::afterLast($email, '@'));
-        $allowed = collect($domains)->contains(fn ($item) => strtolower(trim((string) $item)) === $domain);
-        if (! $allowed) {
-            throw new RuntimeException('Domain email tidak diizinkan.');
+        return User::query()
+            ->where(function ($query) use ($nip, $email, $staff) {
+                $query->where(function ($providerQuery) use ($nip) {
+                    $providerQuery
+                        ->whereIn('auth_provider', ['kemenag_sso', 'local_kemenag_sso'])
+                        ->where('provider_id', $nip);
+                })->orWhere('nip', $nip);
+
+                if ($staff) {
+                    $query->orWhere('staff_id', $staff->id);
+                }
+
+                if ($this->isUsableEmail($email)) {
+                    $query->orWhereRaw('LOWER(email) = ?', [$email]);
+                }
+            })
+            ->get()
+            ->unique('id')
+            ->values();
+    }
+
+    private function resolveEmail(string $email, string $nip, User $user): string
+    {
+        if ($this->isUsableEmail($email)) {
+            $emailOwner = User::query()
+                ->whereRaw('LOWER(email) = ?', [$email])
+                ->when($user->exists, fn ($query) => $query->whereKeyNot($user->getKey()))
+                ->exists();
+
+            if (! $emailOwner) {
+                return $email;
+            }
         }
+
+        if ($user->exists && $this->isUsableEmail((string) $user->email)) {
+            return strtolower((string) $user->email);
+        }
+
+        return 'sso.'.$nip.'@users.invalid';
+    }
+
+    private function isUsableEmail(string $email): bool
+    {
+        return $email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+    }
+
+    private function normalizeNip(string $nip): string
+    {
+        return preg_replace('/\D+/', '', $nip) ?: '';
+    }
+
+    private function firstValue(array $data, array $keys): string
+    {
+        foreach ($keys as $key) {
+            $value = trim((string) data_get($data, $key));
+            if ($value !== '') {
+                return $value;
+            }
+        }
+
+        return '';
     }
 
     private function ensureConfigured(): void
     {
-        foreach (['client_id', 'client_secret', 'authorization_url', 'token_url', 'userinfo_url'] as $key) {
+        foreach (['app_id', 'signin_url', 'verify_url'] as $key) {
             if (blank(config('kemenag-sso.'.$key))) {
                 throw new RuntimeException('Konfigurasi KEMENAG_SSO_'.strtoupper($key).' belum diisi.');
             }
         }
     }
 
-    private function redirectUri(): string
+    private function safeErrorMessage(Throwable $exception): string
     {
-        return (string) (config('kemenag-sso.redirect_uri') ?: route('admin.sso.callback'));
+        $allowedMessages = [
+            'Sesi login SSO tidak ditemukan atau sudah kedaluwarsa.',
+            'Token callback SSO tidak diterima.',
+            'NIP belum terdaftar sebagai GTK aktif pada website.',
+            'NIP atau email terhubung ke lebih dari satu akun. Hubungi administrator.',
+            'Akun administrator tidak dapat ditautkan ke SSO secara otomatis.',
+            'Akun SSO belum didaftarkan oleh administrator.',
+        ];
+
+        return in_array($exception->getMessage(), $allowedMessages, true)
+            ? $exception->getMessage()
+            : 'Login SSO belum berhasil. Periksa konfigurasi atau hubungi administrator aplikasi.';
     }
 
     private function http(): PendingRequest

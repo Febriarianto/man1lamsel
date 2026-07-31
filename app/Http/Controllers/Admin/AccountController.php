@@ -17,7 +17,7 @@ class AccountController extends Controller
     public function update(Request $request)
     {
         $user = $request->user();
-        if ($user->usesSso()) {
+        if ($user->usesSsoOnly()) {
             return back()->with('error', 'Nama, email, dan kata sandi akun SSO dikelola melalui sistem SSO Kemenag.');
         }
 
@@ -34,6 +34,7 @@ class AccountController extends Controller
         }
 
         $user->update($data);
+
         return back()->with('success', 'Akun berhasil diperbarui.');
     }
 }

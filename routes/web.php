@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\PageController as AdminPageController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\SimpegController;
 use App\Http\Controllers\Admin\SsoController;
 use App\Http\Controllers\Admin\StaffController as AdminStaffController;
 use App\Http\Controllers\Admin\UserController;
@@ -61,6 +62,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::middleware('admin')->group(function () {
             Route::resource('pages', AdminPageController::class)->except('show');
             Route::resource('staff', AdminStaffController::class)->except('show');
+            Route::get('/simpeg', [SimpegController::class, 'index'])->name('simpeg.index');
+            Route::post('/simpeg/sync', [SimpegController::class, 'sync'])->name('simpeg.sync')->middleware('throttle:2,1');
             Route::resource('galleries', AdminGalleryController::class)->except('show');
             Route::resource('banners', BannerController::class)->except('show');
             Route::resource('links', LinkController::class)->except('show');

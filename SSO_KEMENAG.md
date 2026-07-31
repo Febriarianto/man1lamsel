@@ -1,106 +1,42 @@
-# Panduan Integrasi SSO Kemenag
+# Panduan SSO SIMPEG Kementerian Agama
 
-## Arsitektur
+Integrasi ini mengikuti tutorial resmi:
 
-Integrasi v1.4 menggunakan OAuth 2.0 Authorization Code Flow dengan endpoint UserInfo yang lazim digunakan pada OpenID Connect. Endpoint tidak ditulis permanen di source code karena alamat, scope, dan nama claim dapat berbeda sesuai layanan SSO yang diberikan kepada aplikasi.
+https://api.kemenag.go.id/user_guide/v.1/simpeg/sso/
 
-## Data yang Perlu Diminta kepada Pengelola SSO
+Alur pada tutorial tersebut bukan OAuth Authorization Code. Aplikasi mengirim `appid` ke halaman signin, menerima `token` pada callback, lalu memverifikasi token sebagai Bearer token ke endpoint verify.
 
-1. Client ID.
-2. Client Secret.
-3. Authorization endpoint.
-4. Token endpoint.
-5. UserInfo endpoint.
-6. Scope yang diizinkan.
-7. Nama claim untuk ID unik, nama, email, NIP, unit kerja, dan foto.
-8. Metode autentikasi token: `client_secret_post` atau `client_secret_basic`.
-9. Redirect URI yang harus didaftarkan.
+## 1. Daftarkan Aplikasi
 
-## Redirect URI
+1. Masuk ke https://api.kemenag.go.id/.
+2. Daftarkan aplikasi website.
+3. Isi URL callback aplikasi:
 
-```text
-https://domain.sch.id/admin/sso/kemenag/callback
-```
+   ```text
+   https://domain-sekolah.sch.id/admin/sso/kemenag/callback
+   ```
 
-Nilainya harus sama persis pada `.env` dan konfigurasi aplikasi di server SSO, termasuk skema HTTPS, domain, port, dan path.
+4. Setelah aplikasi disetujui, salin **APP ID** yang diberikan.
 
-## Contoh `.env`
+Callback harus memakai HTTPS pada produksi. Domain dan path harus sama persis dengan yang didaftarkan.
+
+## 2. Isi `.env`
 
 ```dotenv
 KEMENAG_SSO_ENABLED=true
 KEMENAG_SSO_LABEL="Masuk dengan SSO Kemenag"
-KEMENAG_SSO_CLIENT_ID="..."
-KEMENAG_SSO_CLIENT_SECRET="..."
-KEMENAG_SSO_REDIRECT_URI="https://domain.sch.id/admin/sso/kemenag/callback"
-KEMENAG_SSO_AUTHORIZATION_URL="https://sso.example/authorize"
-KEMENAG_SSO_TOKEN_URL="https://sso.example/token"
-KEMENAG_SSO_USERINFO_URL="https://sso.example/userinfo"
-KEMENAG_SSO_SCOPES="openid,profile,email"
-KEMENAG_SSO_TOKEN_AUTH_METHOD=client_secret_post
+KEMENAG_SSO_APP_ID="APP_ID_DARI_KEMENAG"
+KEMENAG_SSO_SIGNIN_URL="https://sso.kemenag.go.id/auth/signin"
+KEMENAG_SSO_VERIFY_URL="https://sso.kemenag.go.id/auth/verify"
+KEMENAG_SSO_SIGNOUT_URL="https://sso.kemenag.go.id/auth/signout"
+KEMENAG_SSO_VERIFY_METHOD=POST
+KEMENAG_SSO_CALLBACK_TOKEN_PARAM=token
 KEMENAG_SSO_AUTO_PROVISION=true
-KEMENAG_SSO_DEFAULT_ROLE=author
-KEMENAG_SSO_ALLOWED_EMAIL_DOMAINS=
-KEMENAG_SSO_CLAIM_ID=sub
-KEMENAG_SSO_CLAIM_NAME=name
-KEMENAG_SSO_CLAIM_EMAIL=email
-KEMENAG_SSO_CLAIM_NIP=nip
-KEMENAG_SSO_CLAIM_UNIT=unit_name
-KEMENAG_SSO_CLAIM_AVATAR=picture
+KEMENAG_SSO_REQUIRE_STAFF_MATCH=true
+KEMENAG_SSO_AUTO_LINK_BY_NIP=true
+KEMENAG_SSO_LOGIN_ATTEMPT_TTL=600
 KEMENAG_SSO_TIMEOUT=15
 KEMENAG_SSO_VERIFY_SSL=true
-```
-
-## Auto-Provision
-
-Saat `KEMENAG_SSO_AUTO_PROVISION=true`, pengguna yang berhasil diautentikasi akan dibuat otomatis pada tabel `users`. Role baru selalu mengikuti `KEMENAG_SSO_DEFAULT_ROLE`, yang disarankan tetap `author`.
-
-Akun yang sudah ada dicocokkan berdasarkan:
-
-1. Kombinasi `auth_provider` dan `provider_id`.
-2. Email, sebagai mekanisme penghubung akun lama.
-
-Role akun lama tidak ditimpa ketika profil disinkronkan ulang.
-
-## Pembatasan Email
-
-Untuk menerima domain tertentu saja:
-
-```dotenv
-KEMENAG_SSO_ALLOWED_EMAIL_DOMAINS=kemenag.go.id,man1lamsel.sch.id
-```
-
-Kosongkan jika Identity Provider menggunakan domain email yang beragam atau claim email bukan domain organisasi.
-
-## Claim Bertingkat
-
-Pembacaan claim menggunakan dot notation:
-
-```dotenv
-KEMENAG_SSO_CLAIM_ID=data.user.id
-KEMENAG_SSO_CLAIM_NAME=data.user.nama
-KEMENAG_SSO_CLAIM_EMAIL=data.user.email
-KEMENAG_SSO_CLAIM_NIP=data.pegawai.nip
-KEMENAG_SSO_CLAIM_UNIT=data.pegawai.satker.nama
-```
-
-## Alur Artikel
-
-1. Guru/pegawai login melalui SSO.
-2. Sistem menyimpan atau memperbarui profil lokal.
-3. Pengguna membuka **Artikel Saya**.
-4. Artikel disimpan sebagai draft.
-5. Administrator melihat draft beserta nama penulis dan unit kerja.
-6. Administrator melakukan review dan mengubah status menjadi Published.
-7. Website publik menampilkan nama penulis dari kolom snapshot `author_name`.
-
-## Troubleshooting
-
-### Tombol SSO tidak tampil
-
-Pastikan:
-
-```dotenv
-KEMENAG_SSO_ENABLED=true
 ```
 
 Kemudian jalankan:
@@ -109,18 +45,72 @@ Kemudian jalankan:
 php artisan optimize:clear
 ```
 
-### Callback ditolak
+Tombol SSO tampil hanya jika SSO diaktifkan dan APP ID sudah terisi.
 
-Periksa kesamaan `KEMENAG_SSO_REDIRECT_URI` dengan redirect URI yang didaftarkan pada Identity Provider.
+## 3. Siapkan Data GTK
 
-### Profil tidak memiliki email atau ID
+Konfigurasi aman bawaan hanya mengizinkan GTK aktif yang NIP-nya sudah terdaftar:
 
-Sesuaikan `KEMENAG_SSO_CLAIM_ID` dan `KEMENAG_SSO_CLAIM_EMAIL` dengan respons UserInfo sebenarnya.
+1. Buka **Admin → GTK**.
+2. Tambahkan atau edit guru/pegawai.
+3. Isi NIP tanpa spasi.
+4. Pastikan status GTK aktif.
 
-### Sertifikat SSL gagal saat pengembangan lokal
+Jika guru sudah memiliki akun manual, buka **Admin → Pengguna & Penulis**, edit akun, lalu pilih data GTK yang sesuai. Saat login SSO pertama, akun lokal otomatis menjadi **Manual + SSO**. Kata sandi manual tidak dihapus.
 
-Gunakan sertifikat yang valid. `KEMENAG_SSO_VERIFY_SSL=false` hanya boleh digunakan sementara untuk pengujian internal, bukan produksi.
+## Alur Teknis
 
-### SSO menggunakan CAS atau SAML
+1. Pengguna menekan **Masuk dengan SSO Kemenag**.
+2. Website mengarahkan ke `https://sso.kemenag.go.id/auth/signin?appid=APP_ID`.
+3. Kemenag mengembalikan pengguna ke callback dengan parameter `token`.
+4. Server mengirim token sebagai `Authorization: Bearer ...` ke endpoint verify.
+5. Profil `pegawai`, terutama NIP, nama, email, foto, dan satuan kerja, dibaca.
+6. NIP dicocokkan dengan data GTK dan akun penulis.
+7. Pengguna masuk sebagai penulis.
 
-Controller v1.4 disiapkan untuk OAuth 2.0/OpenID Connect. Bila dokumen resmi menyatakan protokol CAS atau SAML, adapter autentikasi perlu disesuaikan dengan metadata dan prosedur dari Identity Provider tersebut.
+Token callback tidak disimpan ke database dan tidak ditulis ke log. Pengguna SSO baru selalu mendapat role `author`; administrator tidak pernah dibuat atau ditautkan otomatis.
+
+Jika SIMPEG tidak mengirim email, sistem menggunakan alamat internal `sso.NIP@users.invalid`.
+
+## Pilihan Verifikasi GET atau POST
+
+Tutorial resmi menampilkan GET pada satu bagian dan POST pada contoh implementasi lengkap. Konfigurasi bawaan memakai POST. Jika pengelola API mengonfirmasi aplikasi memakai GET:
+
+```dotenv
+KEMENAG_SSO_VERIFY_METHOD=GET
+```
+
+## Pengaturan Pencocokan GTK
+
+Untuk mengizinkan pegawai valid dari SIMPEG walaupun belum terdaftar pada menu GTK:
+
+```dotenv
+KEMENAG_SSO_REQUIRE_STAFF_MATCH=false
+```
+
+Pengaturan tersebut lebih longgar dan tidak disarankan untuk produksi.
+
+## Troubleshooting
+
+### Tombol SSO tidak tampil
+
+Periksa `KEMENAG_SSO_ENABLED` dan `KEMENAG_SSO_APP_ID`, lalu jalankan `php artisan optimize:clear`.
+
+### NIP belum terdaftar
+
+Isi NIP pada menu **GTK**, pastikan hanya angka dan statusnya aktif. Nilai harus sama dengan `NIP` pada respons SIMPEG.
+
+### Login kembali ke halaman masuk
+
+Periksa `storage/logs/laravel.log`, URL callback yang didaftarkan, persetujuan aplikasi, APP ID, dan metode verifikasi.
+
+### Pengujian lokal
+
+SSO nyata biasanya memerlukan callback HTTPS yang dapat diakses dari internet. Gunakan domain staging HTTPS dan daftarkan callback staging itu pada aplikasi Kemenag.
+
+### Produksi
+
+```dotenv
+APP_DEBUG=false
+KEMENAG_SSO_VERIFY_SSL=true
+```

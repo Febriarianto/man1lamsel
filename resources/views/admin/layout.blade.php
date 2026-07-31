@@ -28,6 +28,7 @@
             @if(auth()->user()->isAdmin())
             <a class="{{ request()->routeIs('admin.pages.*')?'active':'' }}" href="{{ route('admin.pages.index') }}"><i class="bi bi-file-earmark-text"></i> Halaman Profil</a>
             <a class="{{ request()->routeIs('admin.staff.*')?'active':'' }}" href="{{ route('admin.staff.index') }}"><i class="bi bi-people"></i> GTK</a>
+            <a class="{{ request()->routeIs('admin.simpeg.*')?'active':'' }}" href="{{ route('admin.simpeg.index') }}"><i class="bi bi-arrow-repeat"></i> Sinkron SIMPEG</a>
             <a class="{{ request()->routeIs('admin.galleries.*')?'active':'' }}" href="{{ route('admin.galleries.index') }}"><i class="bi bi-images"></i> Galeri</a>
             <a class="{{ request()->routeIs('admin.infographics.*')?'active':'' }}" href="{{ route('admin.infographics.index') }}"><i class="bi bi-file-earmark-bar-graph"></i> Infografis</a>
             <a class="{{ request()->routeIs('admin.events.*')?'active':'' }}" href="{{ route('admin.events.index') }}"><i class="bi bi-calendar-event"></i> Agenda</a>

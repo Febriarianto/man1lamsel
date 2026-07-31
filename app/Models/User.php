@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -12,7 +13,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     protected $fillable = [
-        'name', 'email', 'password', 'role', 'auth_provider', 'provider_id',
+        'staff_id', 'name', 'email', 'password', 'role', 'auth_provider', 'provider_id',
         'nip', 'unit_name', 'avatar', 'active', 'last_login_at',
     ];
 
@@ -33,6 +34,11 @@ class User extends Authenticatable
         return $this->hasMany(Post::class, 'author_id');
     }
 
+    public function staff(): BelongsTo
+    {
+        return $this->belongsTo(Staff::class);
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
@@ -45,6 +51,16 @@ class User extends Authenticatable
 
     public function usesSso(): bool
     {
+        return in_array($this->auth_provider, ['kemenag_sso', 'local_kemenag_sso'], true);
+    }
+
+    public function usesSsoOnly(): bool
+    {
         return $this->auth_provider === 'kemenag_sso';
+    }
+
+    public function allowsManualLogin(): bool
+    {
+        return in_array($this->auth_provider, ['local', 'local_kemenag_sso'], true);
     }
 }

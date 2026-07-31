@@ -46,16 +46,16 @@ php artisan optimize:clear
 
 ## Mengaktifkan SSO
 
-Edit `.env` dan isi Client ID, Client Secret, serta endpoint resmi:
+Daftarkan callback aplikasi pada portal API Kemenag, lalu edit `.env` dan isi APP ID:
 
 ```dotenv
 KEMENAG_SSO_ENABLED=true
-KEMENAG_SSO_CLIENT_ID=
-KEMENAG_SSO_CLIENT_SECRET=
-KEMENAG_SSO_REDIRECT_URI="http://127.0.0.1:8000/admin/sso/kemenag/callback"
-KEMENAG_SSO_AUTHORIZATION_URL=
-KEMENAG_SSO_TOKEN_URL=
-KEMENAG_SSO_USERINFO_URL=
+KEMENAG_SSO_APP_ID="APP_ID_DARI_KEMENAG"
+KEMENAG_SSO_SIGNIN_URL="https://sso.kemenag.go.id/auth/signin"
+KEMENAG_SSO_VERIFY_URL="https://sso.kemenag.go.id/auth/verify"
+KEMENAG_SSO_SIGNOUT_URL="https://sso.kemenag.go.id/auth/signout"
+KEMENAG_SSO_VERIFY_METHOD=POST
+KEMENAG_SSO_REQUIRE_STAFF_MATCH=true
 ```
 
 Kemudian:
@@ -64,7 +64,13 @@ Kemudian:
 php artisan optimize:clear
 ```
 
-Pada produksi, ganti redirect URI menjadi domain HTTPS sebenarnya dan daftarkan URL tersebut ke pengelola SSO Kemenag.
+Daftarkan callback produksi berikut pada aplikasi Kemenag:
+
+```text
+https://domain-sekolah.sch.id/admin/sso/kemenag/callback
+```
+
+SSO nyata memerlukan callback HTTPS yang dapat diakses oleh server Kemenag. Baca `SSO_KEMENAG.md` untuk panduan lengkap.
 
 ## Jika Folder Cache Tidak Dapat Ditulis
 

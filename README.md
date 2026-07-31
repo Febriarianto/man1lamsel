@@ -1,6 +1,6 @@
-# MAN 1 Lampung Selatan — Modern School CMS v1.7
+# MAN 1 Lampung Selatan — Modern School CMS v1.9
 
-Portal sekolah dan CMS modern berbasis **Laravel 12**, **PHP 8.2+**, dan **MySQL**. Versi 1.7 menyatukan editor artikel dan halaman menggunakan Summernote, mengubah format slug menjadi underscore, serta menyempurnakan proporsi halaman baca berita.
+Portal sekolah dan CMS modern berbasis **Laravel 12**, **PHP 8.2+**, dan **MySQL**. Versi 1.9 menambahkan sinkronisasi pegawai SIMPEG khusus kode satuan kerja `02090325000000`, sekaligus memperbarui data GTK untuk penautan SSO berdasarkan NIP.
 
 ## Fitur Utama
 
@@ -24,17 +24,19 @@ Portal sekolah dan CMS modern berbasis **Laravel 12**, **PHP 8.2+**, dan **MySQL
 - Login lokal administrator tetap tersedia.
 - Theme Color Manager dengan live preview, preset warna, pengaturan komposisi, dan pilihan penerapan warna ke dashboard.
 - Summernote sebagai editor visual untuk seluruh isi berita, artikel, dan halaman profil.
+- Sinkronisasi data pegawai SIMPEG dengan pagination, filter satker dua lapis, upsert NIP, riwayat proses, dan pembaruan GTK.
 
 ### Ruang Penulis Guru/Pegawai
 
 - Masuk menggunakan akun manual atau SSO Kemenag.
-- Akun dibuat otomatis saat login pertama jika auto-provision aktif.
+- Akun dibuat otomatis saat login pertama jika auto-provision aktif dan NIP terdaftar sebagai GTK aktif.
+- Akun manual dapat ditautkan ke GTK lalu digunakan untuk login manual maupun SSO.
 - Role awal `author` atau Penulis Artikel.
 - Hanya dapat melihat artikel miliknya sendiri.
 - Artikel selalu disimpan sebagai draft.
 - Hanya dapat mengedit atau menghapus draft miliknya sendiri.
 - Artikel yang telah diterbitkan hanya dapat diubah administrator.
-- Nama penulis, NIP, email, dan unit kerja disinkronkan dari claim SSO.
+- Nama penulis, NIP, email, foto, dan unit kerja disinkronkan dari profil SIMPEG.
 
 ## Login Manual Penulis
 
@@ -59,7 +61,7 @@ Slug dikonversi otomatis dari judul maupun input manual. Tautan lama yang masih 
 - Composer 2.x.
 - MySQL 5.7+ atau MySQL 8.x.
 - Apache atau Nginx.
-- Kredensial dan endpoint aplikasi dari pengelola SSO Kemenag.
+- APP ID aplikasi yang sudah disetujui pada portal API Kemenag.
 
 Frontend menggunakan Bootstrap melalui CDN sehingga tidak membutuhkan npm atau Vite.
 
@@ -145,61 +147,35 @@ Baca panduan lengkap di `THEME_MANAGER.md`.
 
 ## Konfigurasi SSO Kemenag
 
-Salin blok `KEMENAG_SSO_*` dari `.env.example` ke `.env`, lalu isi nilai yang diberikan pengelola Identity Provider Kemenag:
-
-```dotenv
-KEMENAG_SSO_ENABLED=true
-KEMENAG_SSO_CLIENT_ID=client-id-aplikasi
-KEMENAG_SSO_CLIENT_SECRET=client-secret-aplikasi
-KEMENAG_SSO_REDIRECT_URI="https://domain.sch.id/admin/sso/kemenag/callback"
-KEMENAG_SSO_AUTHORIZATION_URL="https://alamat-sso/authorize"
-KEMENAG_SSO_TOKEN_URL="https://alamat-sso/token"
-KEMENAG_SSO_USERINFO_URL="https://alamat-sso/userinfo"
-KEMENAG_SSO_SCOPES="openid,profile,email"
-KEMENAG_SSO_DEFAULT_ROLE=author
-```
-
-Setelah mengubah `.env`:
-
-```bash
-php artisan optimize:clear
-```
-
-Callback URL yang harus didaftarkan pada SSO:
+Daftarkan callback berikut pada portal API Kemenag:
 
 ```text
 https://domain.sch.id/admin/sso/kemenag/callback
 ```
 
-Nama claim dapat disesuaikan tanpa mengubah kode:
+Kemudian isi APP ID pada `.env`:
 
 ```dotenv
-KEMENAG_SSO_CLAIM_ID=sub
-KEMENAG_SSO_CLAIM_NAME=name
-KEMENAG_SSO_CLAIM_EMAIL=email
-KEMENAG_SSO_CLAIM_NIP=nip
-KEMENAG_SSO_CLAIM_UNIT=unit_name
-KEMENAG_SSO_CLAIM_AVATAR=picture
+KEMENAG_SSO_ENABLED=true
+KEMENAG_SSO_APP_ID="APP_ID_DARI_KEMENAG"
+KEMENAG_SSO_SIGNIN_URL="https://sso.kemenag.go.id/auth/signin"
+KEMENAG_SSO_VERIFY_URL="https://sso.kemenag.go.id/auth/verify"
+KEMENAG_SSO_SIGNOUT_URL="https://sso.kemenag.go.id/auth/signout"
+KEMENAG_SSO_VERIFY_METHOD=POST
+KEMENAG_SSO_REQUIRE_STAFF_MATCH=true
 ```
 
-Claim bertingkat juga didukung, misalnya:
-
-```dotenv
-KEMENAG_SSO_CLAIM_NIP="pegawai.nip"
-KEMENAG_SSO_CLAIM_UNIT="pegawai.satuan_kerja.nama"
-```
-
-Baca panduan lengkap di `SSO_KEMENAG.md`.
+Setelah mengubah `.env`, jalankan `php artisan optimize:clear`. Baca panduan lengkap di `SSO_KEMENAG.md`.
 
 ## Keamanan SSO
 
-- Menggunakan Authorization Code Flow.
-- Memvalidasi parameter `state` untuk mencegah pemalsuan callback.
-- Profil pengguna diambil menggunakan access token dari endpoint UserInfo.
-- Client secret hanya disimpan di `.env` dan tidak dimasukkan ke database.
+- Mengikuti alur APP ID, callback token, dan endpoint verify SIMPEG.
+- Token diverifikasi sebagai Bearer token dari server dan tidak disimpan.
+- Callback hanya diterima setelah sesi login dimulai dari website dan belum kedaluwarsa.
+- NIP secara bawaan wajib cocok dengan data GTK aktif.
 - Pengguna SSO baru otomatis menjadi penulis, bukan administrator.
+- Akun administrator tidak pernah ditautkan otomatis.
 - Admin dapat menonaktifkan akun dari menu **Pengguna & Penulis**.
-- Pembatasan domain email dapat diaktifkan melalui `KEMENAG_SSO_ALLOWED_EMAIL_DOMAINS`.
 
 ## Data Baru v1.4
 

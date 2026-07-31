@@ -17,7 +17,7 @@
 <body class="login-page"><div class="login-shell"><div class="login-visual"><div><img src="{{ $loginLogo }}" alt="Logo"><span>DASHBOARD MADRASAH</span><h1>Kelola informasi madrasah bersama-sama.</h1><p>Administrator mengelola seluruh portal, sedangkan guru dan pegawai dapat menulis artikel menggunakan akun manual atau SSO Kemenag.</p></div></div><div class="login-form-wrap"><div class="login-form"><a href="{{ route('home') }}" class="back-link"><i class="bi bi-arrow-left"></i> Kembali ke website</a><h2>Selamat datang</h2><p>Silahkan login menggunakan akun anda masing-masing.</p>
 @if(session('error'))<div class="alert alert-danger">{{ session('error') }}</div>@endif
 @if($errors->any())<div class="alert alert-danger">{{ $errors->first() }}</div>@endif
-@if(config('kemenag-sso.enabled'))
+@if(config('kemenag-sso.enabled') && filled(config('kemenag-sso.app_id')))
 <a href="{{ route('admin.sso.redirect') }}" class="btn btn-primary w-100 btn-lg mb-3"><i class="bi bi-shield-lock me-2"></i>{{ config('kemenag-sso.label') }}</a>
 <div class="text-center text-secondary small mb-3">Untuk ASN Kementerian Agama | MAN 1 Lampung Selatan</div>
 <div class="d-flex align-items-center gap-3 mb-3"><hr class="flex-grow-1"><span class="small text-secondary">LOGIN MANUAL</span><hr class="flex-grow-1"></div>

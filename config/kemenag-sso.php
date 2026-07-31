@@ -3,40 +3,28 @@
 return [
     /*
     |--------------------------------------------------------------------------
-    | Kemenag Single Sign-On
+    | SSO SIMPEG Kementerian Agama
     |--------------------------------------------------------------------------
     |
-    | Endpoint dan claim SSO dapat berbeda pada setiap lingkungan Kementerian
-    | Agama. Seluruh parameter dibuat melalui .env agar source code tidak perlu
-    | diubah ketika aplikasi didaftarkan ke Identity Provider resmi.
+    | Alur ini mengikuti dokumentasi SIMPEG: aplikasi mengarahkan pengguna ke
+    | endpoint signin dengan APP ID, menerima token pada callback, lalu
+    | memverifikasi token tersebut ke endpoint verify menggunakan Bearer token.
     |
     */
     'enabled' => env('KEMENAG_SSO_ENABLED', false),
     'label' => env('KEMENAG_SSO_LABEL', 'Masuk dengan SSO Kemenag'),
 
-    'client_id' => env('KEMENAG_SSO_CLIENT_ID'),
-    'client_secret' => env('KEMENAG_SSO_CLIENT_SECRET'),
-    'redirect_uri' => env('KEMENAG_SSO_REDIRECT_URI'),
-
-    'authorization_url' => env('KEMENAG_SSO_AUTHORIZATION_URL'),
-    'token_url' => env('KEMENAG_SSO_TOKEN_URL'),
-    'userinfo_url' => env('KEMENAG_SSO_USERINFO_URL'),
-    'logout_url' => env('KEMENAG_SSO_LOGOUT_URL'),
-    'scopes' => array_values(array_filter(array_map('trim', explode(',', env('KEMENAG_SSO_SCOPES', 'openid,profile,email'))))),
-    'token_auth_method' => env('KEMENAG_SSO_TOKEN_AUTH_METHOD', 'client_secret_post'),
+    'app_id' => env('KEMENAG_SSO_APP_ID'),
+    'signin_url' => env('KEMENAG_SSO_SIGNIN_URL', 'https://sso.kemenag.go.id/auth/signin'),
+    'verify_url' => env('KEMENAG_SSO_VERIFY_URL', 'https://sso.kemenag.go.id/auth/verify'),
+    'signout_url' => env('KEMENAG_SSO_SIGNOUT_URL', 'https://sso.kemenag.go.id/auth/signout'),
+    'verify_method' => strtoupper(env('KEMENAG_SSO_VERIFY_METHOD', 'POST')),
+    'callback_token_parameter' => env('KEMENAG_SSO_CALLBACK_TOKEN_PARAM', 'token'),
 
     'auto_provision' => env('KEMENAG_SSO_AUTO_PROVISION', true),
-    'default_role' => env('KEMENAG_SSO_DEFAULT_ROLE', 'author'),
-    'allowed_email_domains' => array_values(array_filter(array_map('trim', explode(',', env('KEMENAG_SSO_ALLOWED_EMAIL_DOMAINS', ''))))),
-
-    'claims' => [
-        'id' => env('KEMENAG_SSO_CLAIM_ID', 'sub'),
-        'name' => env('KEMENAG_SSO_CLAIM_NAME', 'name'),
-        'email' => env('KEMENAG_SSO_CLAIM_EMAIL', 'email'),
-        'nip' => env('KEMENAG_SSO_CLAIM_NIP', 'nip'),
-        'unit' => env('KEMENAG_SSO_CLAIM_UNIT', 'unit_name'),
-        'avatar' => env('KEMENAG_SSO_CLAIM_AVATAR', 'picture'),
-    ],
+    'require_staff_match' => env('KEMENAG_SSO_REQUIRE_STAFF_MATCH', true),
+    'auto_link_by_nip' => env('KEMENAG_SSO_AUTO_LINK_BY_NIP', true),
+    'login_attempt_ttl' => (int) env('KEMENAG_SSO_LOGIN_ATTEMPT_TTL', 600),
 
     'http' => [
         'timeout' => (int) env('KEMENAG_SSO_TIMEOUT', 15),
