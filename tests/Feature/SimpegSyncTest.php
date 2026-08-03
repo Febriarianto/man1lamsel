@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Staff;
 use App\Models\User;
 use App\Services\SimpegSynchronizer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -125,6 +126,43 @@ class SimpegSyncTest extends TestCase
             ->assertSee('guru@kemenag.go.id')
             ->assertSee('PNS')
             ->assertSee('Terhubung SIMPEG');
+    }
+
+    public function test_sync_merges_legacy_staff_and_preserves_uploaded_photo(): void
+    {
+        $legacy = Staff::query()->create([
+            'name' => 'Dr. Hj. Yayuk Dwi Wahyuni, M.Ag',
+            'slug' => 'yayuk_dwi_wahyuni',
+            'position' => 'Guru',
+            'type' => 'guru',
+            'photo' => 'staff/foto-yayuk.png',
+            'bio' => 'Biografi yang sudah ditulis administrator.',
+            'sort_order' => 2,
+            'active' => true,
+        ]);
+        $syncedDuplicate = Staff::query()->create([
+            'name' => 'Dr. Hj YAYUK DWI WAHYUNI, S.Pd.I., M.Ag',
+            'nip' => '198801012010011001',
+            'slug' => 'dr_hj_yayuk_dwi_wahyuni_simpeg',
+            'position' => 'Guru Ahli Muda',
+            'type' => 'guru',
+            'photo' => null,
+            'sort_order' => 99,
+            'active' => true,
+        ]);
+
+        $this->fakeApi('Dr. Hj YAYUK DWI WAHYUNI, S.Pd.I., M.Ag');
+        app(SimpegSynchronizer::class)->sync();
+
+        $this->assertDatabaseMissing('staff', ['id' => $legacy->id]);
+        $this->assertDatabaseCount('staff', 1);
+        $this->assertDatabaseHas('staff', [
+            'id' => $syncedDuplicate->id,
+            'nip' => '198801012010011001',
+            'photo' => 'staff/foto-yayuk.png',
+            'bio' => 'Biografi yang sudah ditulis administrator.',
+            'sort_order' => 2,
+        ]);
     }
 
     private function fakeApi(string $name = 'Guru SIMPEG, S.Pd.'): void

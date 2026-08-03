@@ -31,6 +31,31 @@ class SimpegSynchronizer
         }
     }
 
+    public function repairStaffFromStoredData(): array
+    {
+        $lock = Cache::lock('simpeg-employees-sync', 900);
+        if (! $lock->get()) {
+            throw new LockTimeoutException('Sinkronisasi SIMPEG lain masih berjalan.');
+        }
+
+        $stats = ['processed' => 0, 'created' => 0, 'updated' => 0];
+
+        try {
+            SimpegEmployee::query()
+                ->where('kode_satker_2', (string) config('simpeg.satker_2_code'))
+                ->orderBy('id')
+                ->each(function (SimpegEmployee $employee) use (&$stats): void {
+                    $result = DB::transaction(fn (): string => $this->syncStaff($employee));
+                    $stats['processed']++;
+                    $stats[$result]++;
+                });
+
+            return $stats;
+        } finally {
+            $lock->release();
+        }
+    }
+
     private function runSync(?int $userId): SimpegSyncLog
     {
         $satkerCode = $this->normalizeCode((string) config('simpeg.satker_2_code'));
@@ -215,12 +240,13 @@ class SimpegSynchronizer
         $name = $name !== '' ? $name : 'Pegawai '.$nip;
 
         $staff = Staff::query()->where('nip', $nip)->first();
-        if (! $staff) {
-            $sameName = Staff::query()
-                ->whereNull('nip')
-                ->whereRaw('LOWER(name) = ?', [strtolower($name)])
-                ->get();
-            $staff = $sameName->count() === 1 ? $sameName->first() : null;
+        $legacyStaff = $this->legacyStaffMatch($name, $staff?->id);
+
+        if ($staff && $legacyStaff) {
+            $this->mergeLegacyStaff($staff, $legacyStaff);
+            $staff->refresh();
+        } elseif (! $staff) {
+            $staff = $legacyStaff;
         }
 
         $position = trim((string) (
@@ -256,11 +282,72 @@ class SimpegSynchronizer
             'position' => $position,
             'subject' => $unit ?: null,
             'type' => $this->staffType($position),
+            'photo' => $this->defaultStaffPhoto($nip),
             'sort_order' => ((int) Staff::query()->max('sort_order')) + 1,
             'active' => true,
         ]);
 
         return 'created';
+    }
+
+    private function legacyStaffMatch(string $name, ?int $exceptId = null): ?Staff
+    {
+        $nameKey = $this->normalizedStaffName($name);
+        if ($nameKey === '') {
+            return null;
+        }
+
+        $matches = Staff::query()
+            ->whereNull('nip')
+            ->when($exceptId, fn ($query) => $query->whereKeyNot($exceptId))
+            ->get()
+            ->filter(fn (Staff $staff): bool => $this->normalizedStaffName($staff->name) === $nameKey)
+            ->values();
+
+        return $matches->count() === 1 ? $matches->first() : null;
+    }
+
+    private function mergeLegacyStaff(Staff $target, Staff $legacy): void
+    {
+        $preserved = [
+            'photo' => $target->photo ?: $legacy->photo,
+            'bio' => $target->bio ?: $legacy->bio,
+            'sort_order' => $legacy->sort_order,
+        ];
+
+        $targetUser = $target->user()->first();
+        $legacyUser = $legacy->user()->first();
+
+        if (! $targetUser && $legacyUser) {
+            $legacyUser->update(['staff_id' => $target->id]);
+            $legacyUser = null;
+        }
+
+        $target->update($preserved);
+
+        // Dua profil yang sama hanya digabung jika tidak ada dua akun berbeda
+        // yang masih bergantung pada kedua baris GTK tersebut.
+        if (! $legacyUser) {
+            $legacy->delete();
+        }
+    }
+
+    private function normalizedStaffName(string $name): string
+    {
+        $name = (string) Str::of($name)
+            ->before(',')
+            ->ascii()
+            ->lower()
+            ->replaceMatches('/^(?:(?:prof|dr|drs|hj|h)\.?\s+)+/u', '')
+            ->replaceMatches('/[^a-z0-9]+/u', ' ')
+            ->squish();
+
+        return trim($name);
+    }
+
+    private function defaultStaffPhoto(string $nip): string
+    {
+        return 'demo/person-'.((abs(crc32($nip)) % 4) + 1).'.svg';
     }
 
     private function uniqueStaffSlug(string $name): string

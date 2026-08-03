@@ -89,6 +89,16 @@ Daftar GTK pada dashboard melakukan `LEFT JOIN` dari `staff.nip` ke `simpeg_empl
 
 Setiap tabel utama pada dashboard menyediakan kolom pencarian. Pencarian dijalankan di server dan parameter tetap dibawa ketika berpindah halaman pagination. Pada tabel GTK, pencarian juga mencakup atribut hasil join SIMPEG.
 
+## Memperbaiki Foto atau Duplikat GTK Lama
+
+Jika sinkronisasi versi lama sempat membuat GTK baru karena perbedaan gelar pada nama, jalankan:
+
+```bash
+php artisan simpeg:repair-staff
+```
+
+Perintah memakai data SIMPEG yang sudah tersimpan sehingga tidak menghubungi API. Pencocokan mengabaikan variasi gelar di awal dan akhir nama. Foto, biografi, urutan, serta hubungan akun dari profil lama dipertahankan ketika duplikat dapat digabung secara aman.
+
 Ketika pemilik NIP login melalui SSO Kemenag, sistem dapat menautkan atau membuat akun penulis sesuai kebijakan SSO yang sudah tersedia.
 
 ## Data dan Log
