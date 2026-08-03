@@ -22,7 +22,8 @@ class SimpegSyncTest extends TestCase
             'simpeg.base_url' => 'https://api.kemenag.go.id/v1',
             'simpeg.email' => 'api-user@example.test',
             'simpeg.password' => 'test-password',
-            'simpeg.satker_code' => '02090325000000',
+            'simpeg.request_satker_code' => '02090000000000',
+            'simpeg.satker_2_code' => '02090325000000',
             'simpeg.page_size' => 400,
             'simpeg.sync_staff' => true,
         ]);
@@ -44,6 +45,7 @@ class SimpegSyncTest extends TestCase
         $this->assertDatabaseHas('simpeg_employees', [
             'identity_nip' => '198801012010011001',
             'kode_satuan_kerja' => '02090325000000',
+            'kode_satker_2' => '02090325000000',
             'nama_lengkap' => 'Guru SIMPEG, S.Pd.',
         ]);
         $this->assertDatabaseMissing('simpeg_employees', [
@@ -63,7 +65,7 @@ class SimpegSyncTest extends TestCase
             $parts = collect($request->data())->keyBy('name');
 
             return $request->hasHeader('Authorization', 'Bearer test-token')
-                && (string) data_get($parts->get('satker'), 'contents') === '02090325000000'
+                && (string) data_get($parts->get('satker'), 'contents') === '02090000000000'
                 && (int) data_get($parts->get('start'), 'contents') === 0
                 && (int) data_get($parts->get('limit'), 'contents') === 400;
         });
@@ -102,6 +104,29 @@ class SimpegSyncTest extends TestCase
             ->assertSee('02090325000000');
     }
 
+    public function test_gtk_table_joins_simpeg_attributes_and_can_search_them(): void
+    {
+        $this->fakeApi();
+        app(SimpegSynchronizer::class)->sync();
+
+        $admin = User::query()->create([
+            'name' => 'Administrator',
+            'email' => 'admin@example.test',
+            'password' => 'secret-password',
+            'role' => 'admin',
+            'auth_provider' => 'local',
+            'active' => true,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('admin.staff.index', ['q' => 'PNS']))
+            ->assertOk()
+            ->assertSee('Guru SIMPEG, S.Pd.')
+            ->assertSee('guru@kemenag.go.id')
+            ->assertSee('PNS')
+            ->assertSee('Terhubung SIMPEG');
+    }
+
     private function fakeApi(string $name = 'Guru SIMPEG, S.Pd.'): void
     {
         Http::fake([
@@ -116,16 +141,22 @@ class SimpegSyncTest extends TestCase
                         'NIP_BARU' => '198801012010011001',
                         'NAMA' => 'Guru SIMPEG',
                         'NAMA_LENGKAP' => $name,
-                        'KODE_SATUAN_KERJA' => '02090325000000',
-                        'SATKER_1' => 'MAN 1 Lampung Selatan',
+                        'KODE_SATKER_1' => '02090000000000',
+                        'SATKER_1' => 'Kantor Wilayah Kementerian Agama Lampung',
+                        'KODE_SATKER_2' => '02090325000000',
+                        'SATKER_2' => 'MAN 1 Lampung Selatan',
                         'TAMPIL_JABATAN' => 'Guru Ahli Muda',
+                        'PANGKAT' => 'Penata',
+                        'GOL_RUANG' => 'III/c',
+                        'PENDIDIKAN' => 'S1',
                         'EMAIL' => 'guru@kemenag.go.id',
                         'STATUS_PEGAWAI' => 'PNS',
                     ],
                     [
                         'NIP_BARU' => '199901012020012002',
                         'NAMA_LENGKAP' => 'Pegawai Satker Lain',
-                        'KODE_SATUAN_KERJA' => '02090326000000',
+                        'KODE_SATKER_1' => '02090000000000',
+                        'KODE_SATKER_2' => '02090326000000',
                         'TAMPIL_JABATAN' => 'Pelaksana',
                     ],
                 ],

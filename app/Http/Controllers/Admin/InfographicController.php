@@ -16,7 +16,13 @@ class InfographicController extends Controller
     public function index(Request $request)
     {
         $infographics = Infographic::query()
-            ->when($request->filled('q'), fn ($q) => $q->where('title', 'like', '%'.$request->q.'%'))
+            ->when($request->filled('q'), fn ($query) => $query->where(function ($search) use ($request): void {
+                $term = '%'.$request->string('q')->trim().'%';
+                $search->where('title', 'like', $term)
+                    ->orWhere('description', 'like', $term)
+                    ->orWhere('source_name', 'like', $term)
+                    ->orWhere('source_url', 'like', $term);
+            }))
             ->orderBy('sort_order')->latest('published_at')->paginate(15)->withQueryString();
 
         return view('admin.infographics.index', compact('infographics'));

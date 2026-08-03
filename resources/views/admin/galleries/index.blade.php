@@ -1,6 +1,25 @@
 @extends('admin.layout')
-@section('title','Galeri')
-@section('page_title','Galeri')
-@section('page_subtitle','Kelola dokumentasi foto dan video')
-@section('page_actions')<a href="{{ route('admin.galleries.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Tambah Galeri</a>@endsection
-@section('content')<div class="admin-card"><form class="filter-bar" method="get"><select name="type" class="form-select"><option value="">Semua jenis</option><option value="photo" @selected(request('type')==='photo')>Foto</option><option value="video" @selected(request('type')==='video')>Video</option></select><button class="btn btn-dark">Filter</button><a href="{{ route('admin.galleries.index') }}" class="btn btn-light">Reset</a></form><div class="table-responsive"><table class="table align-middle"><thead><tr><th>Judul</th><th>Jenis</th><th>Tanggal</th><th>Status</th><th class="text-end">Aksi</th></tr></thead><tbody>@forelse($galleries as $gallery)<tr><td><strong>{{ $gallery->title }}</strong></td><td><span class="badge bg-light text-dark">{{ ucfirst($gallery->type) }}</span></td><td>{{ optional($gallery->published_at)->format('d/m/Y')?:'-' }}</td><td><span class="status-dot {{ $gallery->active?'published':'draft' }}">{{ $gallery->active?'Aktif':'Nonaktif' }}</span></td><td><div class="table-actions"><a href="{{ route('admin.galleries.edit',$gallery) }}" class="btn btn-light btn-sm"><i class="bi bi-pencil"></i></a><form method="post" action="{{ route('admin.galleries.destroy',$gallery) }}">@csrf @method('delete')<button data-confirm="Hapus galeri ini?" class="btn btn-light btn-sm text-danger"><i class="bi bi-trash"></i></button></form></div></td></tr>@empty<tr><td colspan="5" class="text-center py-5">Belum ada galeri.</td></tr>@endforelse</tbody></table></div><div class="p-3">{{ $galleries->links() }}</div></div>@endsection
+@section('title', 'Galeri')
+@section('page_title', 'Galeri')
+@section('page_subtitle', 'Kelola dokumentasi foto dan video')
+@section('page_actions')
+    <a href="{{ route('admin.galleries.create') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Tambah Galeri</a>
+@endsection
+@section('content')
+<div class="admin-card">
+    <form class="filter-bar" method="get">
+        <input class="form-control" name="q" value="{{ request('q') }}" placeholder="Cari judul, deskripsi, atau URL video...">
+        <select name="type" class="form-select"><option value="">Semua jenis</option><option value="photo" @selected(request('type') === 'photo')>Foto</option><option value="video" @selected(request('type') === 'video')>Video</option></select>
+        <button class="btn btn-dark">Filter</button>
+        <a href="{{ route('admin.galleries.index') }}" class="btn btn-light">Reset</a>
+    </form>
+    <div class="table-responsive"><table class="table align-middle"><thead><tr><th>Judul</th><th>Jenis</th><th>Tanggal</th><th>Status</th><th class="text-end">Aksi</th></tr></thead><tbody>
+    @forelse($galleries as $gallery)
+        <tr><td><strong>{{ $gallery->title }}</strong></td><td><span class="badge bg-light text-dark">{{ ucfirst($gallery->type) }}</span></td><td>{{ optional($gallery->published_at)->format('d/m/Y') ?: '-' }}</td><td><span class="status-dot {{ $gallery->active ? 'published' : 'draft' }}">{{ $gallery->active ? 'Aktif' : 'Nonaktif' }}</span></td><td><div class="table-actions"><a href="{{ route('admin.galleries.edit', $gallery) }}" class="btn btn-light btn-sm"><i class="bi bi-pencil"></i></a><form method="post" action="{{ route('admin.galleries.destroy', $gallery) }}">@csrf @method('delete')<button data-confirm="Hapus galeri ini?" class="btn btn-light btn-sm text-danger"><i class="bi bi-trash"></i></button></form></div></td></tr>
+    @empty
+        <tr><td colspan="5" class="text-center py-5">Tidak ada galeri yang sesuai pencarian.</td></tr>
+    @endforelse
+    </tbody></table></div>
+    <div class="p-3">{{ $galleries->links() }}</div>
+</div>
+@endsection

@@ -17,9 +17,44 @@ class StaffController extends Controller
     public function index(Request $request)
     {
         $staff = Staff::query()
+            ->leftJoin('simpeg_employees as simpeg', function ($join): void {
+                $join->on('staff.nip', '=', 'simpeg.identity_nip')
+                    ->where('simpeg.kode_satker_2', '=', (string) config('simpeg.satker_2_code'));
+            })
+            ->select([
+                'staff.*',
+                'simpeg.id as simpeg_employee_id',
+                'simpeg.status_pegawai as simpeg_status_pegawai',
+                'simpeg.pangkat as simpeg_pangkat',
+                'simpeg.gol_ruang as simpeg_gol_ruang',
+                'simpeg.pendidikan as simpeg_pendidikan',
+                'simpeg.email as simpeg_email',
+                'simpeg.no_hp as simpeg_no_hp',
+                'simpeg.tampil_jabatan as simpeg_jabatan',
+                'simpeg.satker_2 as simpeg_satker_2',
+                'simpeg.synced_at as simpeg_synced_at',
+            ])
             ->with('user')
-            ->when($request->filled('type'), fn ($query) => $query->where('type', $request->type))
-            ->orderBy('sort_order')
+            ->when($request->filled('q'), function ($query) use ($request): void {
+                $term = '%'.$request->string('q')->trim().'%';
+                $query->where(function ($search) use ($term): void {
+                    $search->where('staff.name', 'like', $term)
+                        ->orWhere('staff.nip', 'like', $term)
+                        ->orWhere('staff.position', 'like', $term)
+                        ->orWhere('staff.subject', 'like', $term)
+                        ->orWhere('simpeg.nama_lengkap', 'like', $term)
+                        ->orWhere('simpeg.tampil_jabatan', 'like', $term)
+                        ->orWhere('simpeg.status_pegawai', 'like', $term)
+                        ->orWhere('simpeg.pangkat', 'like', $term)
+                        ->orWhere('simpeg.gol_ruang', 'like', $term)
+                        ->orWhere('simpeg.pendidikan', 'like', $term)
+                        ->orWhere('simpeg.email', 'like', $term)
+                        ->orWhere('simpeg.no_hp', 'like', $term);
+                });
+            })
+            ->when($request->filled('type'), fn ($query) => $query->where('staff.type', $request->type))
+            ->orderBy('staff.sort_order')
+            ->orderBy('staff.name')
             ->paginate(20)
             ->withQueryString();
 

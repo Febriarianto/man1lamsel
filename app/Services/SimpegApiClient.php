@@ -43,7 +43,7 @@ class SimpegApiClient
             ->withToken($token)
             ->asMultipart()
             ->post($this->url('pegawai'), [
-                'satker' => (string) config('simpeg.satker_code'),
+                'satker' => (string) config('simpeg.request_satker_code'),
                 'start' => max(0, $start),
                 'limit' => min(400, max(1, $limit)),
             ]);
@@ -78,7 +78,7 @@ class SimpegApiClient
 
     private function ensureConfigured(): void
     {
-        foreach (['email', 'password', 'satker_code'] as $key) {
+        foreach (['email', 'password', 'request_satker_code', 'satker_2_code'] as $key) {
             if (blank(config('simpeg.'.$key))) {
                 throw new RuntimeException('Konfigurasi SIMPEG_'.strtoupper($key).' belum diisi.');
             }

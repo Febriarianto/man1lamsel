@@ -33,9 +33,9 @@ class SimpegSynchronizer
 
     private function runSync(?int $userId): SimpegSyncLog
     {
-        $satkerCode = $this->normalizeCode((string) config('simpeg.satker_code'));
+        $satkerCode = $this->normalizeCode((string) config('simpeg.satker_2_code'));
         if ($satkerCode === '') {
-            throw new RuntimeException('Kode satuan kerja SIMPEG belum diisi.');
+            throw new RuntimeException('Filter KODE_SATKER_2 SIMPEG belum diisi.');
         }
 
         $log = SimpegSyncLog::query()->create([
@@ -135,10 +135,8 @@ class SimpegSynchronizer
     private function mapEmployee(array $row, string $satkerCode): ?array
     {
         $rowSatker = $this->normalizeCode($this->value($row, [
-            'KODE_SATUAN_KERJA',
-            'kode_satuan_kerja',
-            'KODE_SATKER_1',
-            'kode_satker_1',
+            'KODE_SATKER_2',
+            'kode_satker_2',
         ]));
 
         if ($rowSatker !== $satkerCode) {
@@ -175,9 +173,11 @@ class SimpegSynchronizer
             'kode_jabatan' => $this->nullable($this->value($row, ['KODE_JABATAN', 'kode_jabatan'])),
             'tampil_jabatan' => $this->nullable($this->value($row, ['TAMPIL_JABATAN', 'tampil_jabatan'])),
             'tmt_jabatan' => $this->date($this->value($row, ['TMT_JABATAN', 'tmt_jabatan'])),
-            'kode_satuan_kerja' => $satkerCode,
+            // Kolom lama dipertahankan untuk kompatibilitas data dan laporan.
+            // Nilainya sekarang selalu mewakili KODE_SATKER_2 yang lolos filter.
+            'kode_satuan_kerja' => $rowSatker,
             'satker_1' => $this->nullable($this->value($row, ['SATKER_1', 'satker_1'])),
-            'kode_satker_2' => $this->nullable($this->value($row, ['KODE_SATKER_2', 'kode_satker_2'])),
+            'kode_satker_2' => $rowSatker,
             'satker_2' => $this->nullable($this->value($row, ['SATKER_2', 'satker_2'])),
             'kode_satker_3' => $this->nullable($this->value($row, ['KODE_SATKER_3', 'kode_satker_3'])),
             'satker_3' => $this->nullable($this->value($row, ['SATKER_3', 'satker_3'])),
@@ -306,7 +306,7 @@ class SimpegSynchronizer
     private function normalizeCode(string $value): string
     {
         $digits = preg_replace('/\D+/', '', $value) ?: '';
-        $targetLength = strlen((string) config('simpeg.satker_code'));
+        $targetLength = strlen((string) config('simpeg.satker_2_code'));
 
         return $digits !== '' && strlen($digits) < $targetLength
             ? str_pad($digits, $targetLength, '0', STR_PAD_LEFT)

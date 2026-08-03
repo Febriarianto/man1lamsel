@@ -14,7 +14,7 @@ class SimpegController extends Controller
     public function index(Request $request)
     {
         $employees = SimpegEmployee::query()
-            ->where('kode_satuan_kerja', (string) config('simpeg.satker_code'))
+            ->where('kode_satker_2', (string) config('simpeg.satker_2_code'))
             ->when($request->filled('q'), fn ($query) => $query->where(function ($search) use ($request): void {
                 $term = '%'.$request->string('q')->trim().'%';
                 $search->where('nama_lengkap', 'like', $term)
@@ -36,7 +36,7 @@ class SimpegController extends Controller
             ->get();
 
         $statuses = SimpegEmployee::query()
-            ->where('kode_satuan_kerja', (string) config('simpeg.satker_code'))
+            ->where('kode_satker_2', (string) config('simpeg.satker_2_code'))
             ->whereNotNull('status_pegawai')
             ->distinct()
             ->orderBy('status_pegawai')

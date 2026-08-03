@@ -1,0 +1,10 @@
+Seluruh isi presentasi bersumber dari implementasi lokal proyek MAN 1 Lampung Selatan:
+- README.md
+- SSO_KEMENAG.md
+- SIMPEG_SYNC.md
+- THEME_MANAGER.md
+- routes/web.php
+- app/Http/Controllers/Admin/SsoController.php
+- app/Services/SimpegSynchronizer.php
+
+Tidak ada klaim statistik eksternal atau aset eksternal. Logo berasal dari public/images/logo.svg.

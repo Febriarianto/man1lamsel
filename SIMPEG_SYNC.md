@@ -19,7 +19,8 @@ Kredensial yang pernah ditulis langsung dalam source code atau dibagikan melalui
 SIMPEG_API_BASE_URL="https://api.kemenag.go.id/v1"
 SIMPEG_API_EMAIL="EMAIL_API_ANDA"
 SIMPEG_API_PASSWORD="KATA_SANDI_API_ANDA"
-SIMPEG_SATKER_CODE="02090325000000"
+SIMPEG_REQUEST_SATKER_CODE="02090000000000"
+SIMPEG_KODE_SATKER_2="02090325000000"
 SIMPEG_PAGE_SIZE=400
 SIMPEG_API_TIMEOUT=60
 SIMPEG_VERIFY_SSL=true
@@ -32,13 +33,13 @@ Setelah mengubah `.env`:
 php artisan optimize:clear
 ```
 
-`SIMPEG_SATKER_CODE` diperlakukan sebagai string agar angka nol di depan tidak hilang.
+Kedua kode diperlakukan sebagai string agar angka nol di depan tidak hilang. `SIMPEG_REQUEST_SATKER_CODE` dikirim ke endpoint pegawai, sedangkan `SIMPEG_KODE_SATKER_2` menjadi filter wajib sebelum data disimpan.
 
 ## Menjalankan dari Dashboard
 
 1. Masuk sebagai administrator.
 2. Buka **Sinkron SIMPEG** pada sidebar.
-3. Pastikan kode satuan kerja tampil `02090325000000`.
+3. Pastikan filter `KODE_SATKER_2` tampil `02090325000000`.
 4. Tekan **Sinkronkan Sekarang**.
 5. Periksa ringkasan dan riwayat sinkronisasi.
 
@@ -61,10 +62,10 @@ Perintah menampilkan jumlah data yang dilaporkan API, diambil, sesuai filter, di
 Request ke endpoint `/v1/pegawai` selalu membawa:
 
 ```text
-satker=02090325000000
+satker=02090000000000
 ```
 
-Sebelum penyimpanan, aplikasi memeriksa kembali `KODE_SATUAN_KERJA` atau `KODE_SATKER_1`. Baris yang tidak sama dengan `02090325000000` dihitung sebagai dilewati dan tidak masuk database.
+Endpoint mengembalikan pegawai dari satker induk. Sebelum penyimpanan, aplikasi hanya memeriksa `KODE_SATKER_2`. Baris yang nilainya tidak sama dengan `02090325000000` dihitung sebagai dilewati dan tidak masuk database.
 
 ## Sinkronisasi GTK
 
@@ -81,6 +82,12 @@ pegawai yang lolos filter akan dibuat atau diperbarui pada menu GTK:
 - Jenis GTK ditentukan dari jabatan: kepala madrasah, guru, atau pegawai.
 - Data GTK diaktifkan.
 - Akun pengguna tidak dibuat oleh proses ini.
+
+Daftar GTK pada dashboard melakukan `LEFT JOIN` dari `staff.nip` ke `simpeg_employees.identity_nip`. Karena itu GTK lokal tetap terlihat, sedangkan GTK yang memiliki pasangan SIMPEG juga menampilkan status pegawai, pangkat/golongan, pendidikan, email, nomor HP, jabatan, unit, dan waktu sinkron terakhir.
+
+## Pencarian Tabel
+
+Setiap tabel utama pada dashboard menyediakan kolom pencarian. Pencarian dijalankan di server dan parameter tetap dibawa ketika berpindah halaman pagination. Pada tabel GTK, pencarian juga mencakup atribut hasil join SIMPEG.
 
 Ketika pemilik NIP login melalui SSO Kemenag, sistem dapat menautkan atau membuat akun penulis sesuai kebijakan SSO yang sudah tersedia.
 

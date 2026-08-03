@@ -30,4 +30,9 @@ class Staff extends Model
     {
         return $this->hasOne(User::class);
     }
+
+    public function simpegEmployee(): HasOne
+    {
+        return $this->hasOne(SimpegEmployee::class, 'identity_nip', 'nip');
+    }
 }

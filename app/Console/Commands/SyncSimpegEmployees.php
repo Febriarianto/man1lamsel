@@ -14,7 +14,7 @@ class SyncSimpegEmployees extends Command
 
     public function handle(SimpegSynchronizer $synchronizer): int
     {
-        $this->info('Memulai sinkronisasi SIMPEG untuk satker '.config('simpeg.satker_code').'...');
+        $this->info('Memulai sinkronisasi SIMPEG untuk KODE_SATKER_2 '.config('simpeg.satker_2_code').'...');
 
         try {
             $log = $synchronizer->sync();

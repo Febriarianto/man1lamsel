@@ -2,7 +2,7 @@
 @php($configured = filled(config('simpeg.email')) && filled(config('simpeg.password')))
 @section('title', 'Sinkron SIMPEG')
 @section('page_title', 'Sinkronisasi Pegawai SIMPEG')
-@section('page_subtitle', 'Mengambil dan menyimpan pegawai khusus satuan kerja '.config('simpeg.satker_code'))
+@section('page_subtitle', 'Mengambil pegawai dari satker API '.config('simpeg.request_satker_code').' dan menyimpan khusus KODE_SATKER_2 '.config('simpeg.satker_2_code'))
 @section('page_actions')
 <form method="post" action="{{ route('admin.simpeg.sync') }}">
     @csrf
@@ -21,9 +21,9 @@
 <div class="row g-3 mb-4">
     <div class="col-md-4">
         <div class="admin-card p-3 h-100">
-            <small class="text-secondary d-block">Kode Satuan Kerja</small>
-            <strong class="fs-5">{{ config('simpeg.satker_code') }}</strong>
-            <small class="text-secondary d-block mt-1">Dikunci pada konfigurasi server</small>
+            <small class="text-secondary d-block">Filter KODE_SATKER_2</small>
+            <strong class="fs-5">{{ config('simpeg.satker_2_code') }}</strong>
+            <small class="text-secondary d-block mt-1">Request API: {{ config('simpeg.request_satker_code') }}</small>
         </div>
     </div>
     <div class="col-md-4">
@@ -56,7 +56,7 @@
     </form>
     <div class="table-responsive">
         <table class="table align-middle">
-            <thead><tr><th>Pegawai</th><th>NIP Baru</th><th>Jabatan</th><th>Status</th><th>Sinkron Terakhir</th></tr></thead>
+            <thead><tr><th>Pegawai</th><th>NIP Baru</th><th>Jabatan</th><th>KODE_SATKER_2</th><th>Status</th><th>Sinkron Terakhir</th></tr></thead>
             <tbody>
             @forelse($employees as $employee)
                 <tr>
@@ -71,11 +71,12 @@
                         {{ $employee->tampil_jabatan ?: $employee->level_jabatan ?: '-' }}
                         <small class="d-block text-secondary">{{ $employee->satker_5 ?: $employee->satker_4 ?: $employee->satker_3 ?: $employee->satker_2 ?: $employee->satker_1 }}</small>
                     </td>
+                    <td>{{ $employee->kode_satker_2 ?: '-' }}</td>
                     <td>{{ $employee->status_pegawai ?: '-' }}</td>
                     <td>{{ optional($employee->synced_at)->format('d/m/Y H:i') ?: '-' }}</td>
                 </tr>
             @empty
-                <tr><td colspan="5" class="text-center py-5 text-secondary">Belum ada data SIMPEG yang disinkronkan.</td></tr>
+                <tr><td colspan="6" class="text-center py-5 text-secondary">Belum ada data SIMPEG yang sesuai filter atau pencarian.</td></tr>
             @endforelse
             </tbody>
         </table>

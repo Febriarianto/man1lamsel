@@ -1,6 +1,6 @@
-# MAN 1 Lampung Selatan — Modern School CMS v1.9
+# MAN 1 Lampung Selatan — Modern School CMS v2.0
 
-Portal sekolah dan CMS modern berbasis **Laravel 12**, **PHP 8.2+**, dan **MySQL**. Versi 1.9 menambahkan sinkronisasi pegawai SIMPEG khusus kode satuan kerja `02090325000000`, sekaligus memperbarui data GTK untuk penautan SSO berdasarkan NIP.
+Portal sekolah dan CMS modern berbasis **Laravel 12**, **PHP 8.2+**, dan **MySQL**. Versi 2.0 menyaring pegawai berdasarkan `KODE_SATKER_2 = 02090325000000`, menggabungkan data GTK dengan atribut SIMPEG berdasarkan NIP, serta menyediakan pencarian pada seluruh tabel utama dashboard.
 
 ## Fitur Utama
 
@@ -24,7 +24,9 @@ Portal sekolah dan CMS modern berbasis **Laravel 12**, **PHP 8.2+**, dan **MySQL
 - Login lokal administrator tetap tersedia.
 - Theme Color Manager dengan live preview, preset warna, pengaturan komposisi, dan pilihan penerapan warna ke dashboard.
 - Summernote sebagai editor visual untuk seluruh isi berita, artikel, dan halaman profil.
-- Sinkronisasi data pegawai SIMPEG dengan pagination, filter satker dua lapis, upsert NIP, riwayat proses, dan pembaruan GTK.
+- Sinkronisasi data pegawai SIMPEG dengan pagination, filter wajib `KODE_SATKER_2`, upsert NIP, riwayat proses, dan pembaruan GTK.
+- Tabel GTK menggunakan `LEFT JOIN` dengan pegawai SIMPEG untuk menampilkan status pegawai, pangkat/golongan, pendidikan, kontak, jabatan, unit, dan waktu sinkron terakhir.
+- Pencarian server-side tersedia pada seluruh tabel utama dashboard dan tetap aktif saat berpindah halaman.
 
 ### Ruang Penulis Guru/Pegawai
 

@@ -20,7 +20,15 @@ class PostController extends Controller
             ->with('author')
             ->when(! $user->isAdmin(), fn ($q) => $q->where('author_id', $user->id))
             ->when($request->filled('category'), fn ($q) => $q->where('category', $request->category))
-            ->when($request->filled('q'), fn ($q) => $q->where('title', 'like', '%'.$request->q.'%'))
+            ->when($request->filled('q'), fn ($query) => $query->where(function ($search) use ($request): void {
+                $term = '%'.$request->string('q')->trim().'%';
+                $search->where('title', 'like', $term)
+                    ->orWhere('excerpt', 'like', $term)
+                    ->orWhere('author_name', 'like', $term)
+                    ->orWhereHas('author', fn ($author) => $author
+                        ->where('name', 'like', $term)
+                        ->orWhere('email', 'like', $term));
+            }))
             ->latest()
             ->paginate(15)
             ->withQueryString();
@@ -62,6 +70,7 @@ class PostController extends Controller
     public function edit(Request $request, Post $post)
     {
         $this->authorizeManagement($request, $post);
+
         return view('admin.posts.form', compact('post'));
     }
 
