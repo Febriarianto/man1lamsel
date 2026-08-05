@@ -1,6 +1,6 @@
 @extends('admin.layout')
 @section('title','Pengguna')
-@section('page_title','Pengguna & Penulis')
+@section('page_title','Pengguna | Penulis')
 @section('page_subtitle','Kelola akun manual, relasi GTK, dan pengguna SSO Kemenag')
 @section('page_actions')
 <a href="{{ route('admin.users.create') }}" class="btn btn-primary"><i class="bi bi-person-plus me-1"></i> Tambah Penulis Manual</a>
@@ -59,7 +59,18 @@
                     <td>{{ $user->role === 'admin' ? 'Administrator' : 'Penulis' }}</td>
                     <td><span class="status-dot {{ $user->active ? 'published' : 'draft' }}">{{ $user->active ? 'Aktif' : 'Nonaktif' }}</span></td>
                     <td>{{ optional($user->last_login_at)->format('d/m/Y H:i') ?: '-' }}</td>
-                    <td class="text-end"><a href="{{ route('admin.users.edit', $user) }}" class="btn btn-light btn-sm"><i class="bi bi-pencil"></i></a></td>
+                    <td class="text-end">
+                        <div class="d-inline-flex gap-1">
+                            <a href="{{ route('admin.users.edit', $user) }}" class="btn btn-light btn-sm" title="Edit pengguna"><i class="bi bi-pencil"></i></a>
+                            @if($user->isAuthor())
+                                <form method="POST" action="{{ route('admin.users.destroy', $user) }}" onsubmit="return confirm('Hapus akun penulis ini? Artikel yang pernah ditulis tidak ikut terhapus.')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="btn btn-outline-danger btn-sm" type="submit" title="Hapus penulis"><i class="bi bi-trash"></i></button>
+                                </form>
+                            @endif
+                        </div>
+                    </td>
                 </tr>
             @empty
                 <tr><td colspan="7" class="text-center py-5 text-secondary">Belum ada pengguna.</td></tr>

@@ -115,6 +115,7 @@
                         @empty
                             <li class="nav-item"><a class="nav-link" href="{{ route('home') }}">Beranda</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ route('posts.news') }}">Berita</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ route('posts.information') }}">Informasi</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ route('infographics.index') }}">Infografis</a></li>
                             <li class="nav-item"><a class="nav-link" href="{{ route('contact') }}">Kontak</a></li>
                         @endforelse
@@ -137,8 +138,8 @@
                     <p class="footer-copy">{{ $siteSettings['site_description'] ?? 'Portal Resmi | MAN 1 LAMPUNG SELATAN' }}</p>
                     <div class="social-links"><a href="{{ $siteSettings['instagram'] ?? '#' }}"><i class="bi bi-instagram"></i></a><a href="{{ $siteSettings['youtube'] ?? '#' }}"><i class="bi bi-youtube"></i></a><a href="{{ $siteSettings['facebook'] ?? '#' }}"><i class="bi bi-facebook"></i></a></div>
                 </div>
-                <div class="col-6 col-lg-2"><h6>Navigasi</h6><ul class="footer-links"><li><a href="{{ route('posts.news') }}">Berita</a></li><li><a href="{{ route('posts.articles') }}">Artikel</a></li><li><a href="{{ route('posts.announcements') }}">Pengumuman</a></li><li><a href="{{ route('infographics.index') }}">Infografis</a></li><li><a href="{{ route('galleries.photos') }}">Galeri</a></li></ul></div>
-                <div class="col-6 col-lg-2"><h6>Layanan</h6><ul class="footer-links"><li><a href="{{ $siteSettings['spmb_url'] ?? '#' }}">PPDB</a></li><li><a href="{{ $siteSettings['rdm_url'] ?? '#' }}">RDM</a></li><li><a href="https://presensi.man1lamsel.sch.id/">Presensi Siswa</a></li><li><a href="{{ route('contact') }}">Hubungi Kami</a></li><li><a href="{{ route('admin.login') }}">----</a></li></ul></div>
+                <div class="col-6 col-lg-2"><h6>Navigasi</h6><ul class="footer-links"><li><a href="{{ route('posts.news') }}">Berita</a></li><li><a href="{{ route('posts.articles') }}">Artikel</a></li><li><a href="{{ route('posts.announcements') }}">Pengumuman</a></li><li><a href="{{ route('posts.information') }}">Informasi</a></li><li><a href="{{ route('infographics.index') }}">Infografis</a></li><li><a href="{{ route('galleries.photos') }}">Galeri</a></li></ul></div>
+                <div class="col-6 col-lg-2"><h6>Layanan</h6><ul class="footer-links"><li><a href="{{ $siteSettings['spmb_url'] ?? '#' }}">SPMB</a></li><li><a href="{{ $siteSettings['rdm_url'] ?? '#' }}">RDM</a></li><li><a href="https://absensiswa.man1lamsel.sch.id/">#Absensiswa</a></li><li><a href="{{ route('contact') }}">Hubungi Kami</a></li><li><a href="{{ route('admin.login') }}">Administrator</a></li></ul></div>
                 <div class="col-lg-3"><h6>Alamat</h6><ul class="contact-list"><li><i class="bi bi-geo-alt"></i><span>{{ $siteSettings['address'] ?? 'Kalianda, Lampung Selatan' }}</span></li><li><i class="bi bi-telephone"></i><span>{{ $siteSettings['phone'] ?? '-' }}</span></li><li><i class="bi bi-envelope"></i><span>{{ $siteSettings['email'] ?? '-' }}</span></li></ul></div>
             </div>
         </div>

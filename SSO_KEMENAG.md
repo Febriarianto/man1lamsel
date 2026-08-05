@@ -64,13 +64,13 @@ Jika guru sudah memiliki akun manual, buka **Admin → Pengguna & Penulis**, edi
 2. Website mengarahkan ke `https://sso.kemenag.go.id/auth/signin?appid=APP_ID`.
 3. Kemenag mengembalikan pengguna ke callback dengan parameter `token`.
 4. Server mengirim token sebagai `Authorization: Bearer ...` ke endpoint verify.
-5. Profil `pegawai`, terutama NIP, nama, email, foto, dan satuan kerja, dibaca.
-6. NIP dicocokkan dengan data GTK dan akun penulis.
+5. Profil `pegawai`, terutama `NIP_BARU`, nama, email, foto, dan satuan kerja, dibaca.
+6. `NIP_BARU` dicocokkan dengan data GTK dan akun penulis. `NIP` lama hanya digunakan sebagai fallback kompatibilitas.
 7. Pengguna masuk sebagai penulis.
 
 Token callback tidak disimpan ke database dan tidak ditulis ke log. Pengguna SSO baru selalu mendapat role `author`; administrator tidak pernah dibuat atau ditautkan otomatis.
 
-Jika SIMPEG tidak mengirim email, sistem menggunakan alamat internal `sso.NIP@users.invalid`.
+Jika SIMPEG tidak mengirim email, sistem menggunakan alamat internal `sso.NIP_BARU@users.invalid`.
 
 ## Pilihan Verifikasi GET atau POST
 
@@ -98,7 +98,7 @@ Periksa `KEMENAG_SSO_ENABLED` dan `KEMENAG_SSO_APP_ID`, lalu jalankan `php artis
 
 ### NIP belum terdaftar
 
-Isi NIP pada menu **GTK**, pastikan hanya angka dan statusnya aktif. Nilai harus sama dengan `NIP` pada respons SIMPEG.
+Isi NIP pada menu **GTK**, pastikan hanya angka dan statusnya aktif. Nilai harus sama dengan `NIP_BARU` pada respons SIMPEG.
 
 ### Login kembali ke halaman masuk
 

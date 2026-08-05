@@ -1,16 +1,149 @@
 @extends('admin.layout')
-@php($editing=$post->exists)
-@php($isAdmin=auth()->user()->isAdmin())
-@section('title',$editing?'Edit Konten':($isAdmin?'Tambah Konten':'Tulis Artikel'))
-@section('page_title',$editing?'Edit Konten':($isAdmin?'Tambah Konten':'Tulis Artikel'))
-@section('page_subtitle',$isAdmin?'Isi informasi publikasi dan metadata SEO dengan lengkap':'Tuliskan artikel madrasah; nama penulis akan tersimpan otomatis dari akun Anda')
-@section('page_actions')<a href="{{ route('admin.posts.index') }}" class="btn btn-light"><i class="bi bi-arrow-left me-1"></i> Kembali</a>@endsection
+@php($editing = $post->exists)
+@php($isAdmin = auth()->user()->isAdmin())
+@section('title', $editing ? 'Edit Konten' : ($isAdmin ? 'Tambah Konten' : 'Tulis Artikel'))
+@section('page_title', $editing ? 'Edit Konten' : ($isAdmin ? 'Tambah Konten' : 'Tulis Artikel'))
+@section('page_subtitle', $isAdmin ? 'Isi informasi publikasi dan metadata SEO dengan lengkap' : 'Tuliskan artikel madrasah; nama penulis akan tersimpan otomatis dari akun Anda')
+@section('page_actions')
+<a href="{{ route('admin.posts.index') }}" class="btn btn-light"><i class="bi bi-arrow-left me-1"></i> Kembali</a>
+@endsection
+
 @section('content')
-<form method="post" enctype="multipart/form-data" action="{{ $editing?route('admin.posts.update',$post):route('admin.posts.store') }}">@csrf @if($editing)@method('put')@endif
-@if(!$isAdmin)<input type="hidden" name="category" value="artikel"><input type="hidden" name="status" value="draft">@endif
-<div class="row g-4"><div class="col-xl-8">
-@if(!$isAdmin)<div class="alert alert-light border"><i class="bi bi-person-check me-2"></i>Penulis: <strong>{{ auth()->user()->name }}</strong>@if(auth()->user()->nip) · NIP {{ auth()->user()->nip }}@endif @if(auth()->user()->unit_name)<br><small class="text-secondary">{{ auth()->user()->unit_name }}</small>@endif</div>@endif
-<div class="admin-card p-4"><div class="mb-3"><label class="form-label">Judul</label><input class="form-control form-control-lg" name="title" value="{{ old('title',$post->title) }}" required></div><div class="row g-3"><div class="col-md-6"><label class="form-label">Slug URL <small>(opsional, otomatis memakai underscore)</small></label><input class="form-control" name="slug" value="{{ old('slug',$post->slug) }}" placeholder="otomatis_dari_judul"></div>@if($isAdmin)<div class="col-md-6"><label class="form-label">Kategori</label><select class="form-select" name="category" required>@foreach(['berita','artikel','pengumuman','prestasi'] as $cat)<option value="{{ $cat }}" @selected(old('category',$post->category?:'berita')===$cat)>{{ ucfirst($cat) }}</option>@endforeach</select></div>@else<div class="col-md-6"><label class="form-label">Kategori</label><input class="form-control" value="Artikel" disabled></div>@endif</div><div class="mt-3"><label class="form-label">Ringkasan</label><textarea class="form-control" name="excerpt" rows="3">{{ old('excerpt',$post->excerpt) }}</textarea></div><div class="mt-3"><label class="form-label">Isi Konten</label><textarea class="summernote-editor" name="content" data-height="480" data-placeholder="Tulis berita atau artikel secara lengkap...">{{ old('content',$post->content) }}</textarea></div></div>
-<div class="admin-card p-4 mt-4"><h5 class="mb-3"><i class="bi bi-search me-2"></i>SEO Konten</h5><div class="row g-3"><div class="col-12"><label class="form-label">Meta Title</label><input class="form-control" maxlength="255" name="meta_title" value="{{ old('meta_title',$post->meta_title) }}" placeholder="Kosongkan untuk memakai judul konten"></div><div class="col-12"><label class="form-label">Meta Description</label><textarea class="form-control" maxlength="500" rows="3" name="meta_description" placeholder="Deskripsi singkat untuk hasil pencarian Google">{{ old('meta_description',$post->meta_description) }}</textarea></div><div class="col-12"><label class="form-label">Meta Keywords</label><input class="form-control" name="meta_keywords" value="{{ old('meta_keywords',$post->meta_keywords) }}" placeholder="kata kunci, dipisahkan, koma"></div></div></div>
-</div><div class="col-xl-4">@if($isAdmin)<div class="admin-card p-4 mb-4"><h5 class="mb-3">Publikasi</h5><label class="form-label">Status</label><select class="form-select mb-3" name="status"><option value="published" @selected(old('status',$post->status?:'published')==='published')>Published</option><option value="draft" @selected(old('status',$post->status)==='draft')>Draft</option></select><label class="form-label">Tanggal Publikasi</label><input type="datetime-local" class="form-control mb-3" name="published_at" value="{{ old('published_at',optional($post->published_at)->format('Y-m-d\TH:i')?:now()->format('Y-m-d\TH:i')) }}"><div class="form-check form-switch"><input class="form-check-input" type="checkbox" name="featured" value="1" id="featured" @checked(old('featured',$post->featured))><label class="form-check-label" for="featured">Jadikan berita utama</label></div>@if($editing)<hr><small class="text-secondary">Nama penulis tersimpan: <strong>{{ $post->author_display_name }}</strong></small>@endif</div>@else<div class="admin-card p-4 mb-4"><h5 class="mb-3">Alur Publikasi</h5><div class="d-flex gap-3"><span class="stat-icon"><i class="bi bi-file-earmark-check"></i></span><div><strong>Disimpan sebagai Draft</strong><p class="text-secondary small mb-0">Administrator akan memeriksa dan menerbitkan artikel. Artikel terbit tetap menampilkan nama Anda sebagai penulis.</p></div></div></div>@endif<div class="admin-card p-4"><h5 class="mb-3">Gambar Utama</h5>@if($post->image)@php($img=str_starts_with($post->image,'demo/')?asset('images/'.$post->image):Storage::url($post->image))<img src="{{ $img }}" class="image-preview mb-3">@endif<input type="file" name="image" class="form-control" accept="image/*"><small class="text-secondary">Maksimal 4 MB. Rasio ideal 3:2. Gambar juga digunakan untuk Open Graph.</small></div><button class="btn btn-primary btn-lg w-100 mt-4"><i class="bi bi-check2-circle me-1"></i> {{ $isAdmin?($editing?'Simpan Perubahan':'Terbitkan Konten'):($editing?'Perbarui Draft':'Simpan Draft Artikel') }}</button></div></div></form>
+<form method="post" enctype="multipart/form-data" action="{{ $editing ? route('admin.posts.update', $post) : route('admin.posts.store') }}">
+    @csrf
+    @if($editing) @method('put') @endif
+    @if(!$isAdmin)
+        <input type="hidden" name="category" value="artikel">
+        <input type="hidden" name="status" value="draft">
+    @endif
+
+    <div class="row g-4">
+        <div class="col-xl-8">
+            @if(!$isAdmin)
+                <div class="alert alert-light border">
+                    <i class="bi bi-person-check me-2"></i>Penulis: <strong>{{ auth()->user()->name }}</strong>
+                    @if(auth()->user()->nip) &middot; NIP {{ auth()->user()->nip }} @endif
+                    @if(auth()->user()->unit_name)<br><small class="text-secondary">{{ auth()->user()->unit_name }}</small>@endif
+                </div>
+            @endif
+
+            <div class="admin-card p-4">
+                <div class="mb-3">
+                    <label class="form-label">Judul</label>
+                    <input class="form-control form-control-lg" name="title" value="{{ old('title', $post->title) }}" required>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Slug URL <small>(opsional, otomatis memakai underscore)</small></label>
+                        <input class="form-control" name="slug" value="{{ old('slug', $post->slug) }}" placeholder="otomatis_dari_judul">
+                    </div>
+                    @if($isAdmin)
+                        <div class="col-md-6">
+                            <label class="form-label">Kategori</label>
+                            <select class="form-select" name="category" required>
+                                @foreach(['berita', 'artikel', 'pengumuman', 'prestasi', 'informasi'] as $cat)
+                                    <option value="{{ $cat }}" @selected(old('category', $post->category ?: 'berita') === $cat)>{{ ucfirst($cat) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @else
+                        <div class="col-md-6">
+                            <label class="form-label">Kategori</label>
+                            <input class="form-control" value="Artikel" disabled>
+                        </div>
+                    @endif
+                </div>
+                <div class="mt-3">
+                    <label class="form-label">Ringkasan</label>
+                    <textarea class="form-control" name="excerpt" rows="3">{{ old('excerpt', $post->excerpt) }}</textarea>
+                </div>
+                <div class="mt-3">
+                    <label class="form-label">Isi Konten</label>
+                    <textarea class="summernote-editor" name="content" data-height="480" data-placeholder="Tulis berita atau artikel secara lengkap...">{{ old('content', $post->content) }}</textarea>
+                </div>
+            </div>
+
+            <div class="admin-card p-4 mt-4">
+                <h5 class="mb-3"><i class="bi bi-search me-2"></i>SEO Konten</h5>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label">Meta Title</label>
+                        <input class="form-control" maxlength="255" name="meta_title" value="{{ old('meta_title', $post->meta_title) }}" placeholder="Kosongkan untuk memakai judul konten">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Meta Description</label>
+                        <textarea class="form-control" maxlength="500" rows="3" name="meta_description" placeholder="Deskripsi singkat untuk hasil pencarian Google">{{ old('meta_description', $post->meta_description) }}</textarea>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Meta Keywords</label>
+                        <input class="form-control" name="meta_keywords" value="{{ old('meta_keywords', $post->meta_keywords) }}" placeholder="kata kunci, dipisahkan, koma">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            @if($isAdmin)
+                <div class="admin-card p-4 mb-4">
+                    <h5 class="mb-3">Publikasi</h5>
+                    <label class="form-label">Status</label>
+                    <select class="form-select mb-3" name="status">
+                        <option value="published" @selected(old('status', $post->status ?: 'published') === 'published')>Published</option>
+                        <option value="draft" @selected(old('status', $post->status) === 'draft')>Draft</option>
+                    </select>
+                    <label class="form-label">Tanggal Publikasi</label>
+                    <input type="datetime-local" class="form-control mb-3" name="published_at" value="{{ old('published_at', optional($post->published_at)->format('Y-m-d\TH:i') ?: now()->format('Y-m-d\TH:i')) }}">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" name="featured" value="1" id="featured" @checked(old('featured', $post->featured))>
+                        <label class="form-check-label" for="featured">Jadikan berita utama</label>
+                    </div>
+                    @if($editing)
+                        <hr>
+                        <small class="text-secondary">Nama penulis tersimpan: <strong>{{ $post->author_display_name }}</strong></small>
+                    @endif
+                </div>
+            @else
+                <div class="admin-card p-4 mb-4">
+                    <h5 class="mb-3">Alur Publikasi</h5>
+                    <div class="d-flex gap-3">
+                        <span class="stat-icon"><i class="bi bi-file-earmark-check"></i></span>
+                        <div><strong>Disimpan sebagai Draft</strong><p class="text-secondary small mb-0">Administrator akan memeriksa dan menerbitkan artikel. Artikel terbit tetap menampilkan nama Anda sebagai penulis.</p></div>
+                    </div>
+                </div>
+            @endif
+
+            <div class="admin-card p-4">
+                <h5 class="mb-3">Gambar Utama</h5>
+                @if($post->image)
+                    @php($img = str_starts_with($post->image, 'demo/') ? asset('images/'.$post->image) : Storage::url($post->image))
+                    <img src="{{ $img }}" class="image-preview mb-3" alt="Pratinjau gambar utama">
+                @endif
+                <input type="file" name="image" class="form-control" accept="image/*">
+                <small class="text-secondary">Maksimal 4 MB. Rasio ideal 3:2. Gambar juga digunakan untuk Open Graph.</small>
+            </div>
+
+            <div class="admin-card p-4 mt-4">
+                <h5 class="mb-3"><i class="bi bi-paperclip me-2"></i>Lampiran Informasi</h5>
+                @if($post->attachment)
+                    <div class="alert alert-light border py-2">
+                        <a href="{{ Storage::url($post->attachment) }}" target="_blank" class="text-decoration-none">
+                            <i class="bi bi-file-earmark-arrow-down me-1"></i>{{ $post->attachment_name ?: basename($post->attachment) }}
+                        </a>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" name="remove_attachment" value="1" id="remove_attachment">
+                        <label class="form-check-label text-danger" for="remove_attachment">Hapus lampiran lama</label>
+                    </div>
+                @endif
+                <input type="file" name="attachment" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip">
+                <small class="text-secondary">PDF, Word, Excel, PowerPoint, atau ZIP. Maksimal 10 MB. Cocok digunakan pada kategori Informasi.</small>
+            </div>
+
+            <button class="btn btn-primary btn-lg w-100 mt-4">
+                <i class="bi bi-check2-circle me-1"></i>
+                {{ $isAdmin ? ($editing ? 'Simpan Perubahan' : 'Terbitkan Konten') : ($editing ? 'Perbarui Draft' : 'Simpan Draft Artikel') }}
+            </button>
+        </div>
+    </div>
+</form>
 @endsection

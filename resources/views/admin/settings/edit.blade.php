@@ -1,15 +1,15 @@
 @extends('admin.layout')
-@section('title','Pengaturan Situs, Tema & SEO')
-@section('page_title','Pengaturan Situs, Tema & SEO')
+@section('title','Pengaturan | Tema')
+@section('page_title','Pengaturan | Tema')
 @section('page_subtitle','Kelola identitas, warna dinamis, logo, favicon, metadata mesin pencari, kontak, dan layanan')
 @section('content')
 @php
 $labels = [
-'site_name'=>'Nama Situs','site_tagline'=>'Tagline','site_description'=>'Deskripsi Situs','site_logo'=>'Logo Utama','site_favicon'=>'Favicon/Icon Browser',
+'site_name'=>'Deskripsi','site_tagline'=>'Tagline','site_description'=>'Nama Madrasah','site_logo'=>'Logo Madrasah','site_favicon'=>'Favicon',
 'seo_default_title'=>'Judul SEO Utama','seo_default_description'=>'Deskripsi SEO Utama','seo_default_keywords'=>'Kata Kunci Utama','seo_title_separator'=>'Pemisah Judul','seo_og_image'=>'Gambar Default Saat Dibagikan','seo_indexing'=>'Izinkan Mesin Pencari Mengindeks','seo_google_verification'=>'Kode Verifikasi Google Search Console','seo_bing_verification'=>'Kode Verifikasi Bing Webmaster','seo_analytics_id'=>'Google Analytics Measurement ID',
 'phone'=>'Nomor Telepon','email'=>'Email','address'=>'Alamat','maps_url'=>'URL Google Maps','instagram'=>'Instagram','youtube'=>'YouTube','facebook'=>'Facebook','rdm_url'=>'URL RDM','spmb_url'=>'URL SPMB','student_count'=>'Jumlah Siswa','teacher_count'=>'Jumlah Guru','achievement_count'=>'Jumlah Prestasi','alumni_count'=>'Jumlah Alumni'
 ];
-$groupLabels=['general'=>'Identitas Situs','branding'=>'Logo & Icon','seo'=>'SEO & Analitik','contact'=>'Kontak','social'=>'Media Sosial','services'=>'Layanan','statistics'=>'Statistik'];
+$groupLabels=['general'=>'Identitas Website','branding'=>'Gambar','seo'=>'SEO | Analitik','contact'=>'Kontak','social'=>'Media Sosial','services'=>'Layanan','statistics'=>'Statistik'];
 $icons=['general'=>'bi-building','branding'=>'bi-image','seo'=>'bi-search','contact'=>'bi-telephone','social'=>'bi-share','services'=>'bi-grid','statistics'=>'bi-bar-chart'];
 $theme = $settings->get('theme', collect())->keyBy('key');
 $themeValue = fn(string $key, string $default='') => old($key, optional($theme->get($key))->value ?? $default);
@@ -45,7 +45,7 @@ $ratioFields = [
                         <div class="theme-preset-select">
                             <label class="form-label" for="themePreset">Preset Tema</label>
                             <select class="form-select" name="theme_preset" id="themePreset">
-                                <option value="identity-card" @selected($themeValue('theme_preset','identity-card')==='identity-card')>Kartu Identitas — Biru Kuning</option>
+                                <option value="identity-card" @selected($themeValue('theme_preset','identity-card')==='identity-card')>Kartu Identitas Murid— Biru Kuning</option>
                                 <option value="ocean" @selected($themeValue('theme_preset')==='ocean')>Ocean Blue</option>
                                 <option value="emerald" @selected($themeValue('theme_preset')==='emerald')>Emerald Madrasah</option>
                                 <option value="maroon" @selected($themeValue('theme_preset')==='maroon')>Maroon Gold</option>

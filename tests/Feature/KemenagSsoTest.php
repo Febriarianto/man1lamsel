@@ -61,6 +61,7 @@ class KemenagSsoTest extends TestCase
         $this->assertSame('author', $user->role);
         $this->assertSame('kemenag_sso', $user->auth_provider);
         $this->assertSame('198801012010011001', $user->provider_id);
+        $this->assertSame('198801012010011001', $user->nip);
         $this->assertSame($staff->id, $user->staff_id);
         $this->assertSame('Guru SSO', $user->name);
 
@@ -117,6 +118,21 @@ class KemenagSsoTest extends TestCase
         $this->assertDatabaseCount('users', 0);
     }
 
+    public function test_callback_accepts_response_with_only_nip_baru(): void
+    {
+        $staff = $this->createStaff('198801012010011001');
+        $this->fakeSuccessfulVerification(includeOldNip: false);
+
+        $this->withSession($this->ssoAttemptSession())
+            ->get(route('admin.sso.callback', ['token' => 'token-rahasia']))
+            ->assertRedirect(route('admin.dashboard'));
+
+        $user = User::query()->sole();
+        $this->assertSame('198801012010011001', $user->nip);
+        $this->assertSame('198801012010011001', $user->provider_id);
+        $this->assertSame($staff->id, $user->staff_id);
+    }
+
     private function createStaff(string $nip): Staff
     {
         return Staff::query()->create([
@@ -131,18 +147,26 @@ class KemenagSsoTest extends TestCase
         ]);
     }
 
-    private function fakeSuccessfulVerification(string $email = 'guru.sso@kemenag.go.id'): void
-    {
+    private function fakeSuccessfulVerification(
+        string $email = 'guru.sso@kemenag.go.id',
+        bool $includeOldNip = true,
+    ): void {
+        $pegawai = [
+            'NIP_BARU' => '198801012010011001',
+            'NAMA' => 'Guru SSO',
+            'EMAIL' => $email,
+            'SATKER_1' => 'MAN 1 Lampung Selatan',
+            'PHOTO' => 'https://example.test/guru.jpg',
+        ];
+
+        if ($includeOldNip) {
+            $pegawai['NIP'] = '150413807';
+        }
+
         Http::fake([
             'https://sso.kemenag.go.id/auth/verify' => Http::response([
                 'status' => 200,
-                'pegawai' => [
-                    'NIP' => '198801012010011001',
-                    'NAMA' => 'Guru SSO',
-                    'EMAIL' => $email,
-                    'SATKER_1' => 'MAN 1 Lampung Selatan',
-                    'PHOTO' => 'https://example.test/guru.jpg',
-                ],
+                'pegawai' => $pegawai,
             ]),
         ]);
     }

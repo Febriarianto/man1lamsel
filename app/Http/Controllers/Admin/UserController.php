@@ -137,6 +137,30 @@ class UserController extends Controller
         return redirect()->route('admin.users.index')->with('success', 'Data pengguna berhasil diperbarui.');
     }
 
+    public function destroy(Request $request, User $user)
+    {
+        if ($user->isAdmin()) {
+            return back()->with('error', 'Akun administrator tidak dapat dihapus dari menu penulis.');
+        }
+
+        if ($request->user()->is($user)) {
+            return back()->with('error', 'Akun yang sedang digunakan tidak dapat dihapus.');
+        }
+
+        DB::transaction(function () use ($user): void {
+            $user->posts()
+                ->where(function ($query): void {
+                    $query->whereNull('author_name')->orWhere('author_name', '');
+                })
+                ->update(['author_name' => $user->name]);
+
+            $user->delete();
+        });
+
+        return redirect()->route('admin.users.index')
+            ->with('success', 'Akun penulis berhasil dihapus. Artikel yang pernah ditulis tetap tersimpan.');
+    }
+
     private function availableStaff(?User $user = null)
     {
         return Staff::query()

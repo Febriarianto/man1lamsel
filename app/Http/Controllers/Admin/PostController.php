@@ -56,6 +56,10 @@ class PostController extends Controller
         }
 
         $data['image'] = $this->storeImage($request->file('image'), 'posts');
+        if ($request->hasFile('attachment')) {
+            $data['attachment'] = $request->file('attachment')->store('posts/attachments', 'public');
+            $data['attachment_name'] = $request->file('attachment')->getClientOriginalName();
+        }
         $data['author_id'] = $user->id;
         $data['author_name'] = $user->name;
         Post::create($data);
@@ -90,6 +94,23 @@ class PostController extends Controller
         }
 
         $data['image'] = $this->storeImage($request->file('image'), 'posts', $post->image);
+        $data['attachment'] = $post->attachment;
+        $data['attachment_name'] = $post->attachment_name;
+
+        if ($request->hasFile('attachment')) {
+            $newAttachment = $request->file('attachment')->store('posts/attachments', 'public');
+            if ($post->attachment && ! str_starts_with($post->attachment, 'demo/')) {
+                Storage::disk('public')->delete($post->attachment);
+            }
+            $data['attachment'] = $newAttachment;
+            $data['attachment_name'] = $request->file('attachment')->getClientOriginalName();
+        } elseif ($request->boolean('remove_attachment')) {
+            if ($post->attachment && ! str_starts_with($post->attachment, 'demo/')) {
+                Storage::disk('public')->delete($post->attachment);
+            }
+            $data['attachment'] = null;
+            $data['attachment_name'] = null;
+        }
         $data['author_name'] = $post->author_name ?: $post->author?->name ?: $user->name;
         $post->update($data);
 
@@ -101,6 +122,9 @@ class PostController extends Controller
         $this->authorizeManagement($request, $post);
         if ($post->image && ! str_starts_with($post->image, 'demo/')) {
             Storage::disk('public')->delete($post->image);
+        }
+        if ($post->attachment && ! str_starts_with($post->attachment, 'demo/')) {
+            Storage::disk('public')->delete($post->attachment);
         }
         $post->delete();
 
@@ -124,18 +148,24 @@ class PostController extends Controller
             'slug' => Post::makeSlug($request->input('slug') ?: $request->input('title')),
         ]);
 
-        return $request->validate([
+        $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'slug' => ['required', 'string', 'max:255', 'regex:/^[a-z0-9]+(?:_[a-z0-9]+)*$/', Rule::unique('posts', 'slug')->ignore($post?->id)],
-            'category' => ['required', Rule::in(['berita', 'artikel', 'pengumuman', 'prestasi'])],
+            'category' => ['required', Rule::in(['berita', 'artikel', 'pengumuman', 'prestasi', 'informasi'])],
             'excerpt' => ['nullable', 'string', 'max:500'],
             'meta_description' => ['nullable', 'string', 'max:500'],
             'meta_keywords' => ['nullable', 'string', 'max:500'],
             'content' => ['required', 'string'],
             'image' => ['nullable', 'image', 'max:4096'],
+            'attachment' => ['nullable', 'file', 'mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,zip', 'max:10240'],
+            'remove_attachment' => ['nullable', 'boolean'],
             'status' => ['required', Rule::in(['draft', 'published'])],
             'published_at' => ['nullable', 'date'],
         ]);
+
+        unset($data['attachment'], $data['remove_attachment']);
+
+        return $data;
     }
 }

@@ -24,11 +24,12 @@
             <span class="nav-label">UTAMA</span>
             <a class="{{ request()->routeIs('admin.dashboard')?'active':'' }}" href="{{ route('admin.dashboard') }}"><i class="bi bi-grid-1x2"></i> Dashboard</a>
             <span class="nav-label">{{ auth()->user()->isAdmin()?'KONTEN':'PENULIS' }}</span>
-            <a class="{{ request()->routeIs('admin.posts.*')?'active':'' }}" href="{{ route('admin.posts.index') }}"><i class="bi bi-newspaper"></i> {{ auth()->user()->isAdmin()?'Berita & Artikel':'Artikel Saya' }}</a>
+            <a class="{{ request()->routeIs('admin.posts.*')?'active':'' }}" href="{{ route('admin.posts.index') }}"><i class="bi bi-newspaper"></i> {{ auth()->user()->isAdmin()?'Berita | Artikel':'Artikel Saya' }}</a>
             @if(auth()->user()->isAdmin())
             <a class="{{ request()->routeIs('admin.pages.*')?'active':'' }}" href="{{ route('admin.pages.index') }}"><i class="bi bi-file-earmark-text"></i> Halaman Profil</a>
-            <a class="{{ request()->routeIs('admin.staff.*')?'active':'' }}" href="{{ route('admin.staff.index') }}"><i class="bi bi-people"></i> GTK</a>
-            <a class="{{ request()->routeIs('admin.simpeg.*')?'active':'' }}" href="{{ route('admin.simpeg.index') }}"><i class="bi bi-arrow-repeat"></i> Sinkron SIMPEG</a>
+            <a class="{{ request()->routeIs('admin.simpeg.*')?'active':'' }}" href="{{ route('admin.simpeg.index') }}"><i class="bi bi-arrow-repeat"></i> Sinkronisasi SIMPEG</a>
+            <a class="{{ request()->routeIs('admin.staff.*')?'active':'' }}" href="{{ route('admin.staff.index') }}"><i class="bi bi-people"></i>Guru | Tendik</a>
+
             <a class="{{ request()->routeIs('admin.galleries.*')?'active':'' }}" href="{{ route('admin.galleries.index') }}"><i class="bi bi-images"></i> Galeri</a>
             <a class="{{ request()->routeIs('admin.infographics.*')?'active':'' }}" href="{{ route('admin.infographics.index') }}"><i class="bi bi-file-earmark-bar-graph"></i> Infografis</a>
             <a class="{{ request()->routeIs('admin.events.*')?'active':'' }}" href="{{ route('admin.events.index') }}"><i class="bi bi-calendar-event"></i> Agenda</a>
@@ -36,9 +37,9 @@
             <a class="{{ request()->routeIs('admin.menus.*')?'active':'' }}" href="{{ route('admin.menus.index') }}"><i class="bi bi-list-nested"></i> Menu Navbar</a>
             <a class="{{ request()->routeIs('admin.banners.*')?'active':'' }}" href="{{ route('admin.banners.index') }}"><i class="bi bi-window-stack"></i> Banner Utama</a>
             <a class="{{ request()->routeIs('admin.links.*')?'active':'' }}" href="{{ route('admin.links.index') }}"><i class="bi bi-link-45deg"></i> Tautan Layanan</a>
-            <a class="{{ request()->routeIs('admin.settings.*')?'active':'' }}" href="{{ route('admin.settings.edit') }}"><i class="bi bi-gear"></i> Pengaturan, Tema & SEO</a>
-            <span class="nav-label">PENGGUNA & LAYANAN</span>
-            <a class="{{ request()->routeIs('admin.users.*')?'active':'' }}" href="{{ route('admin.users.index') }}"><i class="bi bi-person-badge"></i> Pengguna & Penulis</a>
+            <a class="{{ request()->routeIs('admin.settings.*')?'active':'' }}" href="{{ route('admin.settings.edit') }}"><i class="bi bi-gear"></i> Pengaturan | Tema</a>
+            <span class="nav-label">PENGGUNA | LAYANAN</span>
+            <a class="{{ request()->routeIs('admin.users.*')?'active':'' }}" href="{{ route('admin.users.index') }}"><i class="bi bi-person-badge"></i> Pengguna</a>
             <a class="{{ request()->routeIs('admin.messages.*')?'active':'' }}" href="{{ route('admin.messages.index') }}"><i class="bi bi-envelope"></i> Pesan Masuk @php($unread=\App\Models\ContactMessage::whereNull('read_at')->count())@if($unread)<span class="badge text-bg-warning ms-auto">{{ $unread }}</span>@endif</a>
             @endif
         </nav>

@@ -93,6 +93,7 @@ class DatabaseSeeder extends Seeder
             $upsertMenu('Berita', '/berita', 1, $infoMenu);
             $upsertMenu('Artikel', '/artikel', 2, $infoMenu);
             $upsertMenu('Pengumuman', '/pengumuman', 3, $infoMenu);
+            $upsertMenu('Dokumen & Unduhan', '/informasi', 4, $infoMenu);
             $upsertMenu('Infografis', '/infografis', 5, null, '_self', 'bi-file-earmark-bar-graph');
             $galleryMenu = $upsertMenu('Galeri', null, 6, null, '_self', 'bi-images');
             $upsertMenu('Galeri Foto', '/galeri-foto', 1, $galleryMenu);
@@ -170,13 +171,13 @@ class DatabaseSeeder extends Seeder
         );
 
         foreach([
-            ['Kementerian Agama RI','https://kemenag.go.id','bi-building'],
-            ['EMIS Madrasah','https://emis.kemenag.go.id','bi-database'],
-            ['SIMPATIKA','https://simpatika.kemenag.go.id','bi-people'],
-            ['Kanwil Kemenag Lampung','https://lampung.kemenag.go.id','bi-bank'],
-            ['Rapor Digital Madrasah','#','bi-journal-check'],
-            ['E-Kinerja BKN','https://kinerja.bkn.go.id','bi-graph-up-arrow'],
-        ] as $i=>$link) Link::updateOrCreate(['name'=>$link[0]],['url'=>$link[1],'icon'=>$link[2],'sort_order'=>$i+1,'active'=>true]);
+            ['Kementerian Agama RI','Portal Kementerian Agama','https://kemenag.go.id','bi-building'],
+            ['EMIS Madrasah','Data Pendidikan Madrasah','https://emis.kemenag.go.id','bi-database'],
+            ['SIMPATIKA','Layanan GTK Madrasah','https://simpatika.kemenag.go.id','bi-people'],
+            ['Kanwil Kemenag Lampung','Portal Kemenag Lampung','https://lampung.kemenag.go.id','bi-bank'],
+            ['Rapor Digital Madrasah','Rapor Digital','#','bi-journal-check'],
+            ['E-Kinerja BKN','Kinerja ASN','https://kinerja.bkn.go.id','bi-graph-up-arrow'],
+        ] as $i=>$link) Link::updateOrCreate(['name'=>$link[0]],['description'=>$link[1],'url'=>$link[2],'icon'=>$link[3],'sort_order'=>$i+1,'active'=>true,'new_tab'=>true]);
 
         foreach([
             ['Masa Taaruf Siswa Madrasah',now()->addDays(12)->setTime(7,30),'Aula dan lingkungan madrasah'],

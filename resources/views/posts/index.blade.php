@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@php($labels=['berita'=>'Berita','artikel'=>'Artikel','pengumuman'=>'Pengumuman','prestasi'=>'Prestasi'])
+@php($labels=['berita'=>'Berita','artikel'=>'Artikel','pengumuman'=>'Pengumuman','prestasi'=>'Prestasi','informasi'=>'Informasi'])
 @section('title', ($labels[$category]??ucfirst($category)).' — '.($siteSettings['site_name']??''))
 @section('content')
 @include('partials.page-header',['title'=>$labels[$category]??ucfirst($category),'subtitle'=>'Informasi terbaru dari MAN 1 Lampung Selatan'])

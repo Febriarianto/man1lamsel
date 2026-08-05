@@ -32,6 +32,7 @@ Route::get('/berita', [PostController::class, 'news'])->name('posts.news');
 Route::get('/artikel', [PostController::class, 'articles'])->name('posts.articles');
 Route::get('/pengumuman', [PostController::class, 'announcements'])->name('posts.announcements');
 Route::get('/prestasi', [PostController::class, 'achievements'])->name('posts.achievements');
+Route::get('/informasi', [PostController::class, 'information'])->name('posts.information');
 Route::get('/konten/{post}', [PostController::class, 'show'])->name('posts.show');
 Route::get('/cari', [PostController::class, 'search'])->name('search');
 Route::get('/profil/{page}', [PageController::class, 'show'])->name('pages.show');
@@ -76,6 +77,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('/users', [UserController::class, 'store'])->name('users.store');
             Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
             Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+            Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
             Route::get('/settings', [SettingController::class, 'edit'])->name('settings.edit');
             Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
             Route::get('/messages', [ContactMessageController::class, 'index'])->name('messages.index');

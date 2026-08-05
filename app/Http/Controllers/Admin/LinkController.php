@@ -15,6 +15,7 @@ class LinkController extends Controller
             ->when($term->isNotEmpty(), fn ($query) => $query->where(function ($search) use ($term): void {
                 $value = '%'.$term.'%';
                 $search->where('name', 'like', $value)
+                    ->orWhere('description', 'like', $value)
                     ->orWhere('url', 'like', $value)
                     ->orWhere('icon', 'like', $value);
             }))
@@ -34,6 +35,7 @@ class LinkController extends Controller
     {
         $data = $this->validated($request);
         $data['active'] = $request->boolean('active');
+        $data['new_tab'] = $request->boolean('new_tab');
         Link::create($data);
 
         return redirect()->route('admin.links.index')->with('success', 'Tautan berhasil ditambahkan.');
@@ -48,6 +50,7 @@ class LinkController extends Controller
     {
         $data = $this->validated($request);
         $data['active'] = $request->boolean('active');
+        $data['new_tab'] = $request->boolean('new_tab');
         $link->update($data);
 
         return redirect()->route('admin.links.index')->with('success', 'Tautan berhasil diperbarui.');
@@ -62,6 +65,13 @@ class LinkController extends Controller
 
     private function validated(Request $request): array
     {
-        return $request->validate(['name' => ['required', 'string', 'max:150'], 'url' => ['required', 'string', 'max:500'], 'icon' => ['required', 'string', 'max:100'], 'sort_order' => ['required', 'integer', 'min:0']]);
+        return $request->validate([
+            'name' => ['required', 'string', 'max:150'],
+            'description' => ['nullable', 'string', 'max:160'],
+            'url' => ['required', 'string', 'max:500'],
+            'icon' => ['required', 'string', 'max:100'],
+            'sort_order' => ['required', 'integer', 'min:0'],
+            'new_tab' => ['nullable', 'boolean'],
+        ]);
     }
 }

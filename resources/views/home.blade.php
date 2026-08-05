@@ -18,13 +18,23 @@
     </div>
 </section>
 
-<section class="quick-access-wrap"><div class="container"><div class="quick-access shadow-lg">
-    <a href="{{ $siteSettings['spmb_url'] ?? route('posts.announcements') }}"><span><i class="bi bi-person-plus"></i></span><div><strong>PPDB</strong><small>Murid Baru</small></div></a>
-    <a href="{{ $siteSettings['rdm_url'] ?? '#' }}"><span><i class="bi bi-journal-check"></i></span><div><strong>RDM</strong><small>Rapor Digital</small></div></a>
-    <a href="{{ route('posts.announcements') }}"><span><i class="bi bi-megaphone"></i></span><div><strong>Pengumuman</strong><small>Informasi Penting</small></div></a>
-    <a href="{{ route('galleries.photos') }}"><span><i class="bi bi-images"></i></span><div><strong>Galeri</strong><small>Dokumentasi</small></div></a>
-    <a href="{{ route('contact') }}"><span><i class="bi bi-chat-dots"></i></span><div><strong>Kontak</strong><small>Hubungi Madrasah</small></div></a>
-</div></div></section>
+@if($links->isNotEmpty())
+<section class="quick-access-wrap">
+    <div class="container">
+        <div class="quick-access dynamic-services shadow-lg">
+            @foreach($links as $link)
+                <a href="{{ $link->url }}" @if($link->new_tab) target="_blank" rel="noopener" @endif>
+                    <span><i class="bi {{ $link->icon }}"></i></span>
+                    <div>
+                        <strong>{{ $link->name }}</strong>
+                        <small>{{ $link->description ?: 'Layanan Madrasah' }}</small>
+                    </div>
+                </a>
+            @endforeach
+        </div>
+    </div>
+</section>
+@endif
 
 @if($principal)
 <section class="section-space"><div class="container"><div class="row align-items-center g-5">
@@ -63,5 +73,4 @@
 
 <section class="section-space"><div class="container"><div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-end gap-3 mb-4"><div><span class="section-eyebrow">Galeri Madrasah</span><h2 class="section-title mb-0">Momen dan cerita dalam gambar</h2></div><a href="{{ route('galleries.photos') }}" class="text-link">Lihat seluruh galeri <i class="bi bi-arrow-right"></i></a></div><div class="gallery-grid">@foreach($galleries as $gallery)@php($img = $gallery->image ? (str_starts_with($gallery->image,'demo/') ? asset('images/'.$gallery->image) : Storage::url($gallery->image)) : asset('images/demo/gallery-1.svg'))<a href="{{ $gallery->type==='video' ? ($gallery->video_url ?: '#') : $img }}" {{ $gallery->type==='video' ? 'target=_blank' : '' }} class="gallery-tile"><img src="{{ $img }}" alt="{{ $gallery->title }}"><span class="gallery-overlay"><i class="bi {{ $gallery->type==='video' ? 'bi-play-circle' : 'bi-arrows-fullscreen' }}"></i><strong>{{ $gallery->title }}</strong></span></a>@endforeach</div></div></section>
 
-@if($links->isNotEmpty())<section class="partners-section py-5"><div class="container"><p class="text-center text-uppercase small fw-bold letter-spacing text-secondary mb-4">Tautan layanan dan mitra</p><div class="partner-scroll">@foreach($links as $link)<a href="{{ $link->url }}" target="_blank" rel="noopener"><i class="bi {{ $link->icon }}"></i><span>{{ $link->name }}</span></a>@endforeach</div></div></section>@endif
 @endsection

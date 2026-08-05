@@ -256,7 +256,7 @@ class SimpegSynchronizer
             ?: 'Pegawai'
         ));
         $unit = trim((string) (
-            $employee->satker_5
+            $employee->status_pegawai
             ?: $employee->satker_4
             ?: $employee->satker_3
             ?: $employee->satker_2

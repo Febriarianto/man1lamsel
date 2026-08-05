@@ -126,8 +126,15 @@ class SsoController extends Controller
             ?? data_get($payload, 'data.pegawai')
             ?? data_get($payload, 'data');
 
-        if (! is_array($pegawai) || $this->firstValue($pegawai, ['NIP', 'nip']) === '') {
-            throw new RuntimeException('Data pegawai atau NIP tidak ditemukan pada respons SSO.');
+        if (! is_array($pegawai) || $this->firstValue($pegawai, [
+            'NIP_BARU',
+            'nip_baru',
+            'NIP',
+            'nip',
+            'NIP_LAMA',
+            'nip_lama',
+        ]) === '') {
+            throw new RuntimeException('Data pegawai atau NIP_BARU tidak ditemukan pada respons SSO.');
         }
 
         return $pegawai;
@@ -135,9 +142,16 @@ class SsoController extends Controller
 
     private function resolveUser(array $pegawai): User
     {
-        $nip = $this->normalizeNip($this->firstValue($pegawai, ['NIP', 'nip', 'NIP_LAMA', 'nip_lama']));
+        $nip = $this->normalizeNip($this->firstValue($pegawai, [
+            'NIP_BARU',
+            'nip_baru',
+            'NIP',
+            'nip',
+            'NIP_LAMA',
+            'nip_lama',
+        ]));
         if ($nip === '') {
-            throw new RuntimeException('NIP dari SSO tidak valid.');
+            throw new RuntimeException('NIP_BARU dari SSO tidak valid.');
         }
 
         $name = $this->firstValue($pegawai, ['NAMA', 'nama', 'NAMA_LENGKAP', 'nama_lengkap']);

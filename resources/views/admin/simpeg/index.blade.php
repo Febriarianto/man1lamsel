@@ -1,13 +1,13 @@
 @extends('admin.layout')
 @php($configured = filled(config('simpeg.email')) && filled(config('simpeg.password')))
-@section('title', 'Sinkron SIMPEG')
-@section('page_title', 'Sinkronisasi Pegawai SIMPEG')
+@section('title', 'Sinkroninasi SIMPEG')
+@section('page_title', 'Sinkronisasi Data SIMPEG')
 @section('page_subtitle', 'Mengambil pegawai dari satker API '.config('simpeg.request_satker_code').' dan menyimpan khusus KODE_SATKER_2 '.config('simpeg.satker_2_code'))
 @section('page_actions')
 <form method="post" action="{{ route('admin.simpeg.sync') }}">
     @csrf
     <button class="btn btn-primary" @disabled(!$configured) data-confirm="Mulai sinkronisasi data pegawai dari SIMPEG? Proses dapat memerlukan beberapa menit.">
-        <i class="bi bi-arrow-repeat me-1"></i> Sinkronkan Sekarang
+        <i class="bi bi-arrow-repeat me-1"></i> Mulai Sinkronisasi
     </button>
 </form>
 @endsection
@@ -51,29 +51,31 @@
                 <option value="{{ $status }}" @selected(request('status') === $status)>{{ $status }}</option>
             @endforeach
         </select>
-        <button class="btn btn-dark">Filter</button>
+        <button class="btn btn-dark">Cari</button>
         <a href="{{ route('admin.simpeg.index') }}" class="btn btn-light">Reset</a>
     </form>
     <div class="table-responsive">
         <table class="table align-middle">
-            <thead><tr><th>Pegawai</th><th>NIP Baru</th><th>Jabatan</th><th>KODE_SATKER_2</th><th>Status</th><th>Sinkron Terakhir</th></tr></thead>
+            <thead><tr><th>Nama | NIP</th><th>Jabatan</th><th>Unit Kerja 1</th><th>Unit Kerja 2</th><th>Sinkronisasi</th></tr></thead>
             <tbody>
             @forelse($employees as $employee)
                 <tr>
                     <td>
                         <div class="table-title">
                             <strong>{{ $employee->nama_lengkap ?: $employee->nama ?: '-' }}</strong>
-                            <small>{{ $employee->email ?: 'Email belum tersedia' }}</small>
+                            <small>{{ $employee->nip_baru ?: $employee->nip ?: '-' }}</small>
+                            <small class="d-block text-secondary">{{ $employee->email ?: 'Email belum tersedia' }}</small>
+                         <small class="d-block text-secondary">{{ $employee->no_hp ?: $employee->no_hp ?: '-' }}</small>
                         </div>
                     </td>
-                    <td>{{ $employee->nip_baru ?: $employee->nip ?: '-' }}</td>
                     <td>
-                        {{ $employee->tampil_jabatan ?: $employee->level_jabatan ?: '-' }}
-                        <small class="d-block text-secondary">{{ $employee->satker_5 ?: $employee->satker_4 ?: $employee->satker_3 ?: $employee->satker_2 ?: $employee->satker_1 }}</small>
+                        <strong>{{ $employee->status_pegawai ?: '-' }} | <small>{{ $employee->tampil_jabatan ?: $employee->level_jabatan ?: '-' }}</small></strong>
+                        <small class="d-block text-secondary">{{ collect([$employee->pangkat, $employee->gol_ruang])->filter()->join(' ') ?: 'Pangkat/golongan belum tersedia' }}</small>
+                        <small class="d-block text-secondary">{{ $employee->pendidikan ?: 'Pendidikan belum tersedia' }}</small>
                     </td>
-                    <td>{{ $employee->kode_satker_2 ?: '-' }}</td>
-                    <td>{{ $employee->status_pegawai ?: '-' }}</td>
-                    <td>{{ optional($employee->synced_at)->format('d/m/Y H:i') ?: '-' }}</td>
+                    <td><small>{{ $employee->satker_1 ?:  ' - ' }}</small></td>                    
+                    <td><small>{{ $employee->satker_2?:  ' - ' }}</small></td> 
+                    <td><small>{{ optional($employee->synced_at)->format('d/m/Y H:i') ?: '-' }}</small></td>
                 </tr>
             @empty
                 <tr><td colspan="6" class="text-center py-5 text-secondary">Belum ada data SIMPEG yang sesuai filter atau pencarian.</td></tr>
@@ -88,7 +90,7 @@
     <div class="p-3 border-bottom"><h5 class="mb-0">Riwayat Sinkronisasi</h5></div>
     <div class="table-responsive">
         <table class="table align-middle mb-0">
-            <thead><tr><th>Waktu</th><th>Petugas</th><th>Status</th><th>Sesuai Filter</th><th>Baru / Diperbarui</th><th>GTK</th><th>Keterangan</th></tr></thead>
+            <thead><tr><th>Waktu</th><th>Admin</th><th>Status</th><th>Sesuai Filter</th><th>Baru / Diperbarui</th><th>GTK</th><th>Keterangan</th></tr></thead>
             <tbody>
             @forelse($logs as $log)
                 <tr>
