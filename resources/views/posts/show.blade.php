@@ -12,6 +12,7 @@ default => route('posts.news'),
 @section('meta_keywords', (string) $post->meta_keywords)
 @section('meta_image', (string) $seoImage)
 @section('og_type', 'article')
+@php($hasSidebar = $sidebarInfographics->isNotEmpty() || $latestPosts->isNotEmpty())
 
 @section('content')
 <article class="article-detail">
@@ -19,7 +20,7 @@ default => route('posts.news'),
         <div class="container">
             <div class="article-heading">
                 <a class="article-category" href="{{ $categoryRoute }}">{{ ucfirst($post->category) }}</a>
-                <h2 style="font-weight: bold; font-size: 35px">{{ $post->title }}</h2>
+                <h1>{{ $post->title }}</h1>
                 @if($post->excerpt)<p class="article-summary">{{ $post->excerpt }}</p>@endif
                 <div class="article-meta">
                     <span><i class="bi bi-calendar3"></i> {{ optional($post->published_at)->translatedFormat('d F Y') }}</span>
@@ -33,7 +34,7 @@ default => route('posts.news'),
     <section class="article-reading-section">
         <div class="container article-reading-wrap">
             <div class="row g-4 align-items-start">
-                <div class="{{ $sidebarInfographics->isNotEmpty() ? 'col-lg-8' : 'col-12' }} article-main-column">
+                <div class="{{ $hasSidebar ? 'col-lg-8' : 'col-12' }} article-main-column">
                     @if($post->image)
                     @php($img = str_starts_with($post->image, 'demo/') ? asset('images/'.$post->image) : Storage::url($post->image))
                     <figure class="article-cover-wrap">
@@ -68,39 +69,65 @@ default => route('posts.news'),
                     </div>
                 </div>
 
-                @if($sidebarInfographics->isNotEmpty())
+                @if($hasSidebar)
                 <aside class="col-lg-4">
                     <div class="article-sidebar-sticky">
-                        <div class="article-sidebar-heading">
-                            <div><span>Visual Data</span>
-                                <h2>Infografis</h2>
+                        @if($sidebarInfographics->isNotEmpty())
+                        <section class="article-sidebar-card">
+                            <div class="article-sidebar-heading">
+                                <div><span>Visual Data</span><h2>Infografis</h2></div>
+                                <a href="{{ route('infographics.index') }}" aria-label="Lihat semua infografis"><i class="bi bi-arrow-up-right"></i></a>
                             </div>
-                            <a href="{{ route('infographics.index') }}" aria-label="Lihat semua infografis"><i class="bi bi-arrow-up-right"></i></a>
-                        </div>
-                        <div id="articleInfographicCarousel" class="carousel slide infographic-sidebar-carousel" data-bs-ride="carousel" data-bs-interval="4500" data-bs-pause="hover">
-                            <div class="carousel-inner">
-                                @foreach($sidebarInfographics as $infographic)
-                                @php($infographicImage = str_starts_with($infographic->image, 'demo/') ? asset('images/'.$infographic->image) : Storage::url($infographic->image))
-                                <div class="carousel-item {{ $loop->first ? 'active' : '' }}">
-                                    <a href="{{ route('infographics.show', $infographic) }}" class="sidebar-infographic-card">
-                                        <img src="{{ $infographicImage }}" alt="{{ $infographic->title }}" loading="{{ $loop->first ? 'eager' : 'lazy' }}">
-                                        <div>
-                                            <small>{{ optional($infographic->published_at)->translatedFormat('d M Y') }}</small>
-                                            <h3>{{ $infographic->title }}</h3>
-                                            <span>Lihat infografis <i class="bi bi-arrow-right"></i></span>
+                            <div id="articleInfographicCarousel" class="carousel slide infographic-sidebar-carousel" data-bs-ride="carousel" data-bs-interval="4500" data-bs-pause="hover">
+                                <div class="carousel-inner">
+                                    @foreach($sidebarInfographics as $infographic)
+                                        @php($infographicImage = str_starts_with($infographic->image, 'demo/') ? asset('images/'.$infographic->image) : Storage::url($infographic->image))
+                                        <div class="carousel-item {{ $loop->first ? 'active' : '' }}">
+                                            <a href="{{ route('infographics.show', $infographic) }}" class="sidebar-infographic-card">
+                                                <img src="{{ $infographicImage }}" alt="{{ $infographic->title }}" loading="{{ $loop->first ? 'eager' : 'lazy' }}">
+                                                <div>
+                                                    <small>{{ optional($infographic->published_at)->translatedFormat('d M Y') }}</small>
+                                                    <h3>{{ $infographic->title }}</h3>
+                                                    <span>Lihat infografis <i class="bi bi-arrow-right"></i></span>
+                                                </div>
+                                            </a>
                                         </div>
-                                    </a>
+                                    @endforeach
                                 </div>
+                                @if($sidebarInfographics->count() > 1)
+                                <div class="infographic-carousel-controls">
+                                    <button type="button" data-bs-target="#articleInfographicCarousel" data-bs-slide="prev" aria-label="Infografis sebelumnya"><i class="bi bi-arrow-left"></i></button>
+                                    <span>{{ $sidebarInfographics->count() }} infografis</span>
+                                    <button type="button" data-bs-target="#articleInfographicCarousel" data-bs-slide="next" aria-label="Infografis berikutnya"><i class="bi bi-arrow-right"></i></button>
+                                </div>
+                                @endif
+                            </div>
+                        </section>
+                        @endif
+
+                        @if($latestPosts->isNotEmpty())
+                        <section class="article-sidebar-card latest-news-widget">
+                            <div class="article-sidebar-heading">
+                                <div><span>Informasi Terbaru</span><h2>Berita Terkini</h2></div>
+                                <a href="{{ route('posts.news') }}" aria-label="Lihat semua berita"><i class="bi bi-arrow-up-right"></i></a>
+                            </div>
+                            <div class="latest-news-list">
+                                @foreach($latestPosts as $latestPost)
+                                    @php($latestImage = $latestPost->image ? (str_starts_with($latestPost->image, 'demo/') ? asset('images/'.$latestPost->image) : Storage::url($latestPost->image)) : asset('images/demo/news-osn.svg'))
+                                    <article class="latest-news-item">
+                                        <a href="{{ route('posts.show', $latestPost) }}" class="latest-news-thumb">
+                                            <img src="{{ $latestImage }}" alt="{{ $latestPost->title }}" loading="lazy">
+                                        </a>
+                                        <div>
+                                            <small><i class="bi bi-calendar3"></i> {{ optional($latestPost->published_at)->translatedFormat('d M Y') }}</small>
+                                            <h3><a href="{{ route('posts.show', $latestPost) }}">{{ $latestPost->title }}</a></h3>
+                                        </div>
+                                    </article>
                                 @endforeach
                             </div>
-                            @if($sidebarInfographics->count() > 1)
-                            <div class="infographic-carousel-controls">
-                                <button type="button" data-bs-target="#articleInfographicCarousel" data-bs-slide="prev" aria-label="Infografis sebelumnya"><i class="bi bi-arrow-left"></i></button>
-                                <span>{{ $sidebarInfographics->count() }} infografis</span>
-                                <button type="button" data-bs-target="#articleInfographicCarousel" data-bs-slide="next" aria-label="Infografis berikutnya"><i class="bi bi-arrow-right"></i></button>
-                            </div>
-                            @endif
-                        </div>
+                            <a href="{{ route('posts.news') }}" class="latest-news-more">Lihat semua berita <i class="bi bi-arrow-right"></i></a>
+                        </section>
+                        @endif
                     </div>
                 </aside>
                 @endif

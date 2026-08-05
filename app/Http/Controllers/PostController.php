@@ -34,7 +34,14 @@ class PostController extends Controller
             ->take(6)
             ->get();
 
-        return view('posts.show', compact('post', 'related', 'sidebarInfographics'));
+        $latestPosts = Post::published()
+            ->where('category', 'berita')
+            ->whereKeyNot($post->id)
+            ->latest('published_at')
+            ->take(5)
+            ->get();
+
+        return view('posts.show', compact('post', 'related', 'sidebarInfographics', 'latestPosts'));
     }
 
     public function search(Request $request)

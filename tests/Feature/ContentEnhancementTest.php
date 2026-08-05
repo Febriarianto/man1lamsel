@@ -95,6 +95,17 @@ class ContentEnhancementTest extends TestCase
             'status' => 'published',
             'published_at' => now(),
         ]);
+        Post::query()->create([
+            'author_id' => $admin->id,
+            'author_name' => $admin->name,
+            'title' => 'Berita Paling Baru',
+            'slug' => 'berita_paling_baru',
+            'category' => 'berita',
+            'content' => '<p>Berita terkini.</p>',
+            'status' => 'published',
+            'published_at' => now()->subMinute(),
+        ]);
+
         Infographic::query()->create([
             'title' => 'Infografis Siswa',
             'slug' => 'infografis_siswa',
@@ -109,7 +120,9 @@ class ContentEnhancementTest extends TestCase
             ->assertOk()
             ->assertSee('articleInfographicCarousel')
             ->assertSee('data-bs-ride="carousel"', false)
-            ->assertSee('Infografis Siswa');
+            ->assertSee('Infografis Siswa')
+            ->assertSee('Berita Terkini')
+            ->assertSee('Berita Paling Baru');
         $this->assertSame($bufferLevel, ob_get_level(), json_encode(ob_list_handlers()));
     }
 
