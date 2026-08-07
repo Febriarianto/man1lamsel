@@ -69,29 +69,32 @@ default => route('posts.news'),
                     </div>
                 </div>
 
+
                 @if($hasSidebar)
                 <aside class="col-lg-4">
                     <div class="article-sidebar-sticky">
                         @if($sidebarInfographics->isNotEmpty())
                         <section class="article-sidebar-card">
                             <div class="article-sidebar-heading">
-                                <div><span>Visual Data</span><h2>Infografis</h2></div>
+                                <div><span>Visual Data</span>
+                                    <h2>Infografis</h2>
+                                </div>
                                 <a href="{{ route('infographics.index') }}" aria-label="Lihat semua infografis"><i class="bi bi-arrow-up-right"></i></a>
                             </div>
                             <div id="articleInfographicCarousel" class="carousel slide infographic-sidebar-carousel" data-bs-ride="carousel" data-bs-interval="4500" data-bs-pause="hover">
                                 <div class="carousel-inner">
                                     @foreach($sidebarInfographics as $infographic)
-                                        @php($infographicImage = str_starts_with($infographic->image, 'demo/') ? asset('images/'.$infographic->image) : Storage::url($infographic->image))
-                                        <div class="carousel-item {{ $loop->first ? 'active' : '' }}">
-                                            <a href="{{ route('infographics.show', $infographic) }}" class="sidebar-infographic-card">
-                                                <img src="{{ $infographicImage }}" alt="{{ $infographic->title }}" loading="{{ $loop->first ? 'eager' : 'lazy' }}">
-                                                <div>
-                                                    <small>{{ optional($infographic->published_at)->translatedFormat('d M Y') }}</small>
-                                                    <h3>{{ $infographic->title }}</h3>
-                                                    <span>Lihat infografis <i class="bi bi-arrow-right"></i></span>
-                                                </div>
-                                            </a>
-                                        </div>
+                                    @php($infographicImage = str_starts_with($infographic->image, 'demo/') ? asset('images/'.$infographic->image) : Storage::url($infographic->image))
+                                    <div class="carousel-item {{ $loop->first ? 'active' : '' }}">
+                                        <a href="{{ route('infographics.show', $infographic) }}" class="sidebar-infographic-card">
+                                            <img src="{{ $infographicImage }}" alt="{{ $infographic->title }}" loading="{{ $loop->first ? 'eager' : 'lazy' }}">
+                                            <div>
+                                                <small>{{ optional($infographic->published_at)->translatedFormat('d M Y') }}</small>
+                                                <h3>{{ $infographic->title }}</h3>
+                                                <span>Lihat infografis <i class="bi bi-arrow-right"></i></span>
+                                            </div>
+                                        </a>
+                                    </div>
                                     @endforeach
                                 </div>
                                 @if($sidebarInfographics->count() > 1)
@@ -108,21 +111,23 @@ default => route('posts.news'),
                         @if($latestPosts->isNotEmpty())
                         <section class="article-sidebar-card latest-news-widget">
                             <div class="article-sidebar-heading">
-                                <div><span>Informasi Terbaru</span><h2>Berita Terkini</h2></div>
+                                <div><span>Informasi Terbaru</span>
+                                    <h2>Berita Terkini</h2>
+                                </div>
                                 <a href="{{ route('posts.news') }}" aria-label="Lihat semua berita"><i class="bi bi-arrow-up-right"></i></a>
                             </div>
                             <div class="latest-news-list">
                                 @foreach($latestPosts as $latestPost)
-                                    @php($latestImage = $latestPost->image ? (str_starts_with($latestPost->image, 'demo/') ? asset('images/'.$latestPost->image) : Storage::url($latestPost->image)) : asset('images/demo/news-osn.svg'))
-                                    <article class="latest-news-item">
-                                        <a href="{{ route('posts.show', $latestPost) }}" class="latest-news-thumb">
-                                            <img src="{{ $latestImage }}" alt="{{ $latestPost->title }}" loading="lazy">
-                                        </a>
-                                        <div>
-                                            <small><i class="bi bi-calendar3"></i> {{ optional($latestPost->published_at)->translatedFormat('d M Y') }}</small>
-                                            <h3><a href="{{ route('posts.show', $latestPost) }}">{{ $latestPost->title }}</a></h3>
-                                        </div>
-                                    </article>
+                                @php($latestImage = $latestPost->image ? (str_starts_with($latestPost->image, 'demo/') ? asset('images/'.$latestPost->image) : Storage::url($latestPost->image)) : asset('images/demo/news-osn.svg'))
+                                <article class="latest-news-item">
+                                    <a href="{{ route('posts.show', $latestPost) }}" class="latest-news-thumb">
+                                        <img src="{{ $latestImage }}" alt="{{ $latestPost->title }}" loading="lazy">
+                                    </a>
+                                    <div>
+                                        <small><i class="bi bi-calendar3"></i> {{ optional($latestPost->published_at)->translatedFormat('d M Y') }}</small>
+                                        <h3><a href="{{ route('posts.show', $latestPost) }}">{{ $latestPost->title }}</a></h3>
+                                    </div>
+                                </article>
                                 @endforeach
                             </div>
                             <a href="{{ route('posts.news') }}" class="latest-news-more">Lihat semua berita <i class="bi bi-arrow-right"></i></a>

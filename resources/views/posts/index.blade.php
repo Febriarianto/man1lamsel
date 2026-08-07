@@ -3,5 +3,20 @@
 @section('title', ($labels[$category]??ucfirst($category)).' — '.($siteSettings['site_name']??''))
 @section('content')
 @include('partials.page-header',['title'=>$labels[$category]??ucfirst($category),'subtitle'=>'Informasi terbaru dari MAN 1 Lampung Selatan'])
-<section class="section-space"><div class="container"><div class="row g-4">@forelse($posts as $post)@php($img=$post->image?(str_starts_with($post->image,'demo/')?asset('images/'.$post->image):Storage::url($post->image)):asset('images/demo/news-osn.svg'))<div class="col-md-6 col-lg-4"><article class="post-card h-100"><a href="{{ route('posts.show',$post) }}" class="post-card-image"><img src="{{ $img }}" alt="{{ $post->title }}"><span>{{ $labels[$post->category]??$post->category }}</span></a><div class="post-card-body"><div class="post-meta"><span><i class="bi bi-calendar3"></i> {{ optional($post->published_at)->translatedFormat('d M Y') }}</span>@if($post->category==='artikel')<span><i class="bi bi-person"></i> {{ $post->author_display_name }}</span>@else<span><i class="bi bi-eye"></i> {{ number_format($post->views) }}</span>@endif</div><h3><a href="{{ route('posts.show',$post) }}">{{ $post->title }}</a></h3><p>{{ $post->excerpt }}</p><a href="{{ route('posts.show',$post) }}" class="read-more">Baca selengkapnya <i class="bi bi-arrow-right"></i></a></div></article></div>@empty<div class="col-12"><div class="empty-state">Belum ada konten pada kategori ini.</div></div>@endforelse</div><div class="mt-5">{{ $posts->links() }}</div></div></section>
+<section class="section-space">
+    <div class="container">
+        <div class="row g-4">@forelse($posts as $post)@php($img=$post->image?(str_starts_with($post->image,'demo/')?asset('images/'.$post->image):Storage::url($post->image)):asset('images/demo/news-osn.svg'))<div class="col-md-6 col-lg-4">
+                <article class="post-card h-100"><a href="{{ route('posts.show',$post) }}" class="post-card-image"><img src="{{ $img }}" alt="{{ $post->title }}"><span>{{ $labels[$post->category]??$post->category }}</span></a>
+                    <div class="post-card-body">
+                        <div class="post-meta"><span><i class="bi bi-calendar3"></i> {{ optional($post->published_at)->translatedFormat('d M Y') }}</span>@if($post->category==='artikel')<span><i class="bi bi-person"></i> {{ $post->author_display_name }}</span>@else<span><i class="bi bi-eye"></i> {{ number_format($post->views) }}</span>@endif</div>
+                        <h3><a href="{{ route('posts.show',$post) }}">{{ $post->title }}</a></h3>
+                        <p>{{ $post->excerpt }}</p><a href="{{ route('posts.show',$post) }}" class="read-more">Baca selengkapnya <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                </article>
+            </div>@empty<div class="col-12">
+                <div class="empty-state">Belum ada konten pada kategori ini.</div>
+            </div>@endforelse</div>
+        <div class="mt-5">{{ $posts->links() }}</div>
+    </div>
+</section>
 @endsection

@@ -11,6 +11,7 @@ use Illuminate\Validation\Rule;
 
 class PostController extends Controller
 {
+
     use HandlesUploads;
 
     public function index(Request $request)
@@ -18,14 +19,14 @@ class PostController extends Controller
         $user = $request->user();
         $posts = Post::query()
             ->with('author')
-            ->when(! $user->isAdmin(), fn ($q) => $q->where('author_id', $user->id))
-            ->when($request->filled('category'), fn ($q) => $q->where('category', $request->category))
-            ->when($request->filled('q'), fn ($query) => $query->where(function ($search) use ($request): void {
-                $term = '%'.$request->string('q')->trim().'%';
+            ->when(! $user->isAdmin(), fn($q) => $q->where('author_id', $user->id))
+            ->when($request->filled('category'), fn($q) => $q->where('category', $request->category))
+            ->when($request->filled('q'), fn($query) => $query->where(function ($search) use ($request): void {
+                $term = '%' . $request->string('q')->trim() . '%';
                 $search->where('title', 'like', $term)
                     ->orWhere('excerpt', 'like', $term)
                     ->orWhere('author_name', 'like', $term)
-                    ->orWhereHas('author', fn ($author) => $author
+                    ->orWhereHas('author', fn($author) => $author
                         ->where('name', 'like', $term)
                         ->orWhere('email', 'like', $term));
             }))
