@@ -17,15 +17,19 @@ default => route('posts.news'),
 @section('content')
 <article class="article-detail">
     <header class="article-header">
-        <div class="container">
-            <div class="article-heading">
-                <a class="article-category" href="{{ $categoryRoute }}">{{ ucfirst($post->category) }}</a>
-                <h1>{{ $post->title }}</h1>
-                @if($post->excerpt)<p class="article-summary">{{ $post->excerpt }}</p>@endif
-                <div class="article-meta">
-                    <span><i class="bi bi-calendar3"></i> {{ optional($post->published_at)->translatedFormat('d F Y') }}</span>
-                    <span><i class="bi bi-person"></i> {{ $post->author_display_name }}@if($post->author?->unit_name)<small> &middot; {{ $post->author->unit_name }}</small>@endif</span>
-                    <span><i class="bi bi-eye"></i> {{ number_format($post->views) }} dibaca</span>
+        <div class="container article-reading-wrap">
+            <div class="row g-4">
+                <div class="{{ $hasSidebar ? 'col-lg-8' : 'col-12' }}">
+                    <div class="article-heading">
+                        <a class="article-category" href="{{ $categoryRoute }}">{{ ucfirst($post->category) }}</a>
+                        <h1>{{ $post->title }}</h1>
+                        @if($post->excerpt)<p class="article-summary">{{ $post->excerpt }}</p>@endif
+                        <div class="article-meta">
+                            <span><i class="bi bi-calendar3"></i> {{ optional($post->published_at)->translatedFormat('d F Y') }}</span>
+                            <span><i class="bi bi-person"></i> {{ $post->author_display_name }}@if($post->author?->unit_name)<small> &middot; {{ $post->author->unit_name }}</small>@endif</span>
+                            <span><i class="bi bi-eye"></i> {{ number_format($post->views) }} dibaca</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

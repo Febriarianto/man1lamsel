@@ -1826,8 +1826,8 @@ body {
 }
 
 .article-heading {
-    max-width: 920px;
-    margin: 0 auto
+    max-width: none;
+    margin: 0
 }
 
 .article-category {
