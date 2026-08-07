@@ -179,7 +179,7 @@
                 <h2 class="section-title mb-0">Momen dan cerita dalam gambar</h2>
             </div><a href="{{ route('galleries.photos') }}" class="text-link">Lihat seluruh galeri <i class="bi bi-arrow-right"></i></a>
         </div>
-        <div class="gallery-grid">@foreach($galleries as $gallery)@php($img = $gallery->image ? (str_starts_with($gallery->image,'demo/') ? asset('images/'.$gallery->image) : Storage::url($gallery->image)) : asset('images/demo/gallery-1.svg'))<a href="{{ $gallery->type==='video' ? ($gallery->video_url ?: '#') : $img }}" {{ $gallery->type==='video' ? 'target=_blank' : '' }} class="gallery-tile"><img src="{{ $img }}" alt="{{ $gallery->title }}"><span class="gallery-overlay"><i class="bi {{ $gallery->type==='video' ? 'bi-play-circle' : 'bi-arrows-fullscreen' }}"></i><strong>{{ $gallery->title }}</strong></span></a>@endforeach</div>
+        <div class="gallery-grid">@foreach($galleries as $gallery)@php($img = $gallery->image ? (str_starts_with($gallery->image,'demo/') ? asset('images/'.$gallery->image) : Storage::url($gallery->image)) : asset('images/demo/gallery-1.svg'))<a href="{{ $gallery->type==='video' ? ($gallery->video_url ?: '#') : $img }}" {{ $gallery->type==='video' ? 'target=_blank' : '' }} class="gallery-tile"><img src="{{ $img }}" alt="{{ $gallery->title }}" loading="lazy"><span class="gallery-overlay"><i class="bi {{ $gallery->type==='video' ? 'bi-play-circle' : 'bi-arrows-fullscreen' }}"></i><strong>{{ $gallery->title }}</strong></span></a>@endforeach</div>
     </div>
 </section>
 

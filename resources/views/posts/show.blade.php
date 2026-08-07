@@ -22,7 +22,7 @@ default => route('posts.news'),
                 <div class="col-12">
                     <div class="article-heading">
                         <a class="article-category" href="{{ $categoryRoute }}">{{ ucfirst($post->category) }}</a>
-                        <h2 style="font-weight: 100px; font-size: 40px">{{ $post->title }}</h2>
+                        <h1>{{ $post->title }}</h1>
                         @if($post->excerpt)<p class="article-summary">{{ $post->excerpt }}</p>@endif
                         <div class="article-meta">
                             <span><i class="bi bi-calendar3"></i> {{ optional($post->published_at)->translatedFormat('d F Y') }}</span>
