@@ -18,8 +18,8 @@ default => route('posts.news'),
 <article class="article-detail">
     <header class="article-header">
         <div class="container article-reading-wrap">
-            <div class="row g-4">
-                <div class="{{ $hasSidebar ? 'col-lg-8' : 'col-12' }}">
+            <div class="row">
+                <div class="col-12">
                     <div class="article-heading">
                         <a class="article-category" href="{{ $categoryRoute }}">{{ ucfirst($post->category) }}</a>
                         <h1>{{ $post->title }}</h1>
