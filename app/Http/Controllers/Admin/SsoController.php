@@ -166,7 +166,9 @@ class SsoController extends Controller
             'SATKER_2',
             'satker_2',
         ]);
-        $avatar = $this->firstValue($pegawai, ['PHOTO', 'photo', 'FOTO', 'foto']);
+        $avatar = $this->usableAvatarUrl(
+            $this->firstValue($pegawai, ['PHOTO', 'photo', 'FOTO', 'foto'])
+        );
 
         $staff = Staff::query()->where('nip', $nip)->first();
         if (config('kemenag-sso.require_staff_match') && (! $staff || ! $staff->active)) {
@@ -210,7 +212,7 @@ class SsoController extends Controller
             'provider_id' => $nip,
             'nip' => $nip,
             'unit_name' => $unit !== '' ? $unit : ($user->unit_name ?: $staff?->subject),
-            'avatar' => $avatar !== '' ? $avatar : $user->avatar,
+            'avatar' => $avatar ?? $user->avatar,
             'last_login_at' => now(),
         ]);
         $user->save();
@@ -271,6 +273,19 @@ class SsoController extends Controller
     private function isUsableEmail(string $email): bool
     {
         return $email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+    }
+
+    private function usableAvatarUrl(string $avatar): ?string
+    {
+        $avatar = trim($avatar);
+
+        if ($avatar === '' || strlen($avatar) > 255 || ! filter_var($avatar, FILTER_VALIDATE_URL)) {
+            return null;
+        }
+
+        $scheme = strtolower((string) parse_url($avatar, PHP_URL_SCHEME));
+
+        return in_array($scheme, ['http', 'https'], true) ? $avatar : null;
     }
 
     private function normalizeNip(string $nip): string

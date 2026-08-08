@@ -64,6 +64,7 @@ class KemenagSsoTest extends TestCase
         $this->assertSame('198801012010011001', $user->nip);
         $this->assertSame($staff->id, $user->staff_id);
         $this->assertSame('Guru SSO', $user->name);
+        $this->assertSame('https://example.test/guru.jpg', $user->avatar);
 
         Http::assertSent(fn ($request) => $request->method() === 'POST'
             && $request->url() === 'https://sso.kemenag.go.id/auth/verify'
@@ -133,6 +134,24 @@ class KemenagSsoTest extends TestCase
         $this->assertSame($staff->id, $user->staff_id);
     }
 
+    public function test_callback_ignores_base64_photo_that_does_not_fit_avatar_column(): void
+    {
+        $staff = $this->createStaff('198801012010011001');
+        $this->fakeSuccessfulVerification(
+            photo: 'data:image/jpeg;base64.'.str_repeat('A', 600)
+        );
+
+        $this->withSession($this->ssoAttemptSession())
+            ->get(route('admin.sso.callback', ['token' => 'token-rahasia']))
+            ->assertRedirect(route('admin.dashboard'));
+
+        $user = User::query()->sole();
+
+        $this->assertAuthenticatedAs($user);
+        $this->assertSame($staff->id, $user->staff_id);
+        $this->assertNull($user->avatar);
+    }
+
     private function createStaff(string $nip): Staff
     {
         return Staff::query()->create([
@@ -150,13 +169,14 @@ class KemenagSsoTest extends TestCase
     private function fakeSuccessfulVerification(
         string $email = 'guru.sso@kemenag.go.id',
         bool $includeOldNip = true,
+        string $photo = 'https://example.test/guru.jpg',
     ): void {
         $pegawai = [
             'NIP_BARU' => '198801012010011001',
             'NAMA' => 'Guru SSO',
             'EMAIL' => $email,
             'SATKER_1' => 'MAN 1 Lampung Selatan',
-            'PHOTO' => 'https://example.test/guru.jpg',
+            'PHOTO' => $photo,
         ];
 
         if ($includeOldNip) {
